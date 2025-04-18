@@ -7,7 +7,8 @@ import Lines from "../../Utils/Lines.js"
 
 
 
-export default class Cube
+
+export default class Sphere
 {
     constructor()
     {
@@ -19,10 +20,13 @@ export default class Cube
         this.materials = this.experience.materials
 
         // Parameters
-        this.side = 3
+        this.side = 0.5
 
-        // Set cube
-        this.geometry = new THREE.BoxGeometry(this.side, this.side, this.side)
+
+
+        this.geometry = new THREE.SphereGeometry(this.side, 8, 4)
+        this.instance = new THREE.Group()
+
 
         /** OUTLINES */
 
@@ -32,24 +36,15 @@ export default class Cube
             thickness: 0.05
         })
 
-        this.fill = this.lines.fill(this.geometry)
+        this.fill = this.lines.fill(this.geometry, 0xFF5500)
         this.instance.add(this.fill)
 
 
-        this.instance.position.x = -7
+        this.instance.position.x = 7
+
 
     }
 
-    debug()
-    {
-
-        // Debug
-        this.debug = this.experience.debug
-        if (this.debug.active)
-        {
-            this.debug.ui.add(this.instance.position, 'x', -10, 10, 0.01).name('position.x')
-        }
-    }
 }
 
 

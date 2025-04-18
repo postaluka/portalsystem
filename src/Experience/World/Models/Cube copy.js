@@ -23,7 +23,7 @@ export default class Cube
         this.side = 3
 
         // Set cube
-        this.geometryCube = new THREE.BoxGeometry(this.side, this.side, this.side)
+        this.geometry = new THREE.BoxGeometry(this.side, this.side, this.side)
         this.instance = new THREE.Mesh(
             new THREE.BoxGeometry(this.side, this.side, this.side),
             new THREE.MeshBasicMaterial({
@@ -38,105 +38,77 @@ export default class Cube
                 color: 'white',
             })
         )
-        this.instance.add(this.torus)
+        // this.instance.add(this.torus)
 
+        // OUTLINES v02
 
-        // OUTLINES
-
-        const thicknessOffset = 0.03
-        function createEdgeStroke(p1, p2, thickness = 0.2)
+        function drawEdgesWithThickness({
+            geometry,
+            color = 0x00ff00,
+            thickness = 0.2,
+            resolution = new THREE.Vector2(window.innerWidth, window.innerHeight)
+        })
         {
-            const direction = new THREE.Vector3().subVectors(p2, p1)
-            const length = direction.length()
+            // 1. Створюємо EdgesGeometry з твоєї геометрії
+            const edgesGeometry = new THREE.EdgesGeometry(geometry)
 
-            // Центральна позиція між двома точками
-            const center = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5)
+            // 2. Витягуємо позиції ребер
+            const edgePositions = edgesGeometry.attributes.position.array
 
-            // Створюємо тонкий циліндр (виглядає краще за box)
-            const geometry = new THREE.CylinderGeometry(thickness + thicknessOffset, thickness + thicknessOffset, length, 6, 1, true)
-            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+            // 3. Створюємо LineSegmentsGeometry (розширена версія BufferGeometry)
+            const lineSegmentsGeometry = new LineSegmentsGeometry()
+            lineSegmentsGeometry.setPositions(edgePositions)
 
-            const stroke = new THREE.Mesh(geometry, material)
+            // 4. Створюємо матеріал з товщиною
+            const lineMaterial = new LineMaterial({
+                color,
+                linewidth: thickness,      // товщина у world units
+                worldUnits: true,
+                dashed: false,
+                transparent: false,
+                depthTest: true,
+                depthWrite: false,
+                toneMapped: false
+            })
+            lineMaterial.resolution.copy(resolution) // ОБОВ’ЯЗКОВО!
+            lineMaterial.renderOrder = 2
+            // 🔶 LINES
+            lineMaterial.depthTest = true
+            lineMaterial.depthWrite = false
+            lineMaterial.transparent = true
 
-            // Обертаємо циліндр у напрямку між p1 → p2
-            stroke.position.copy(center)
+            // 5. Створюємо лінії
+            const lines = new LineSegments2(lineSegmentsGeometry, lineMaterial)
 
-            // По замовчуванню циліндр в Three.js направлений вздовж Y — тому потрібно обернути
-            stroke.quaternion.setFromUnitVectors(
-                new THREE.Vector3(0, 1, 0), // Вісь циліндра
-                direction.clone().normalize()
-            )
-
-            return stroke
+            return lines
         }
 
-        const edgeGeoCube = new THREE.EdgesGeometry(this.geometryCube)
-        const posCube = edgeGeoCube.attributes.position.array
+        this.instance = drawEdgesWithThickness({
+            geometry: this.geometry,
+            color: 0x000000,
+            thickness: 0.05
+        })
 
-        const edgeGeoTorus = new THREE.EdgesGeometry(this.geometryTorus)
-        const posTorus = edgeGeoTorus.attributes.position.array
+        this.fill = new THREE.Mesh(
+            this.geometry,
+            new THREE.MeshBasicMaterial({
+                color: 0xD2D1CE,
+            })
+        )
 
-        for (let i = 0; i < posCube.length; i += 6)
-        {
-            const p1 = new THREE.Vector3(posCube[i], posCube[i + 1], posCube[i + 2])
-            const p2 = new THREE.Vector3(posCube[i + 3], posCube[i + 4], posCube[i + 5])
-            const stroke = createEdgeStroke(p1, p2, 0.02) // <-- тут товщина!
-            this.instance.add(stroke)
-        }
 
-        for (let i = 0; i < posTorus.length; i += 6)
-        {
-            const p1 = new THREE.Vector3(posTorus[i], posTorus[i + 1], posTorus[i + 2])
-            const p2 = new THREE.Vector3(posTorus[i + 3], posTorus[i + 4], posTorus[i + 5])
-            const stroke = createEdgeStroke(p1, p2, 0.02) // <-- тут товщина!
-            this.instance.add(stroke)
-        }
+        this.instance.add(this.fill)
 
-        /** POINTS */
+        this.instance.position.x = -5
 
-        const sphereRadius = 0.05  // або трохи менше, ніж товщина stroke
+        // 🔷 FILL
+        this.fill.material.depthWrite = true
+        this.fill.material.depthTest = true
+        this.fill.material.polygonOffset = true
+        this.fill.material.polygonOffsetFactor = 2
+        this.fill.material.polygonOffsetUnits = 2
 
-        const usedVertices = new Set()
 
-        for (let i = 0; i < posCube.length; i += 3)
-        {
-            const x = posCube[i]
-            const y = posCube[i + 1]
-            const z = posCube[i + 2]
-
-            const key = `${x.toFixed(4)}_${y.toFixed(4)}_${z.toFixed(4)}`
-            if (usedVertices.has(key)) continue // Уникаємо дублювання сфер
-
-            usedVertices.add(key)
-
-            const sphere = new THREE.Mesh(
-                new THREE.SphereGeometry(sphereRadius, 8, 8),
-                new THREE.MeshBasicMaterial({ color: 0x00ff00 })
-            )
-
-            sphere.position.set(x, y, z)
-            this.instance.add(sphere)
-        }
-
-        for (let i = 0; i < posTorus.length; i += 3)
-        {
-            const x = posTorus[i]
-            const y = posTorus[i + 1]
-            const z = posTorus[i + 2]
-
-            const key = `${x.toFixed(4)}_${y.toFixed(4)}_${z.toFixed(4)}`
-            if (usedVertices.has(key)) continue // Уникаємо дублювання сфер
-
-            usedVertices.add(key)
-
-            const sphere = new THREE.Mesh(
-                new THREE.SphereGeometry(sphereRadius, 8, 8),
-                new THREE.MeshBasicMaterial({ color: 0x00ff00 })
-            )
-
-            sphere.position.set(x, y, z)
-            this.instance.add(sphere)
-        }
 
 
 
@@ -164,3 +136,5 @@ export default class Cube
         }
     }
 }
+
+

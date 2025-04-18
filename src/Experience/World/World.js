@@ -7,6 +7,8 @@ import Lights from './Lights.js';
 
 import Cube from './Models/Cube.js';
 import Torus from './Models/Torus.js';
+import Sphere from './Models/Sphere.js';
+import Suzanne from './Models/Suzanne.js';
 
 
 
@@ -22,6 +24,8 @@ export default class World
 
         this.cube = new Cube()
         this.torus = new Torus()
+        this.sphere = new Sphere()
+        this.suzanne = new Suzanne()
 
 
 
@@ -36,7 +40,9 @@ export default class World
         this.scene.add(
 
             this.cube.instance,
-            this.torus.instance
+            this.torus.instance,
+            this.sphere.instance,
+            this.suzanne.instance
             // this.space.instance
 
 
@@ -51,6 +57,7 @@ export default class World
     {
         this.cube.instance.rotation.x += this.time.delta * 0.0005
         this.torus.instance.rotation.x -= this.time.delta * 0.0005
+        this.suzanne.instance.rotation.y += this.time.delta * 0.0001
     }
 }
 
