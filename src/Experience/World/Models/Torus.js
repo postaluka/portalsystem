@@ -1,5 +1,5 @@
 import * as THREE from "three"
-
+import { MeshLine, MeshLineMaterial } from 'three.meshline'
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js'
 import { LineSegments2 } from 'three/addons/lines/LineSegments2.js'
 import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js'
@@ -91,6 +91,13 @@ export default class Torus
             })
         )
 
+        this.sphere = new THREE.Mesh(
+            new THREE.SphereGeometry(0.5, 16),
+            new THREE.MeshBasicMaterial({
+                color: 0xFF5500
+            })
+        )
+        this.instance.add(this.sphere)
 
         this.instance.add(this.fill)
 
