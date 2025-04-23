@@ -5,9 +5,10 @@
 
 html,
 body {
-    background-color: #D2D1CE;
+    /* background-color: #D2D1CE; */
     /* no scroll when control is unactive */
     overflow: hidden;
+    /* height: auto; */
 }
 
 .webgl {
@@ -15,4 +16,24 @@ body {
     top: 0;
     left: 0;
     outline: none;
+    z-index: 1;
+    pointer-events: auto;
+}
+
+.bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* 💥 магія тут */
+    display: block;
+    opacity: 15%;
 }

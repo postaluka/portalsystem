@@ -1,12 +1,14 @@
 import * as THREE from 'three'
 
-import Loaders from '../Utils/Loaders'
+import Experience from '../Experience.js'
+
 
 export default class Textures
 {
     constructor()
     {
-        this.loader = new Loaders()
+        this.experience = new Experience()
+        this.loader = this.experience.loaders
 
     }
 }

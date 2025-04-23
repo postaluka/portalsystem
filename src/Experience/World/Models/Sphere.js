@@ -8,6 +8,7 @@ import Lines from "../../Utils/Lines.js"
 
 
 
+
 export default class Sphere
 {
     constructor()
@@ -20,30 +21,35 @@ export default class Sphere
         this.materials = this.experience.materials
 
         // Parameters
-        this.side = 0.5
+        this.radius = 14
 
 
 
-        this.geometry = new THREE.SphereGeometry(this.side, 8, 4)
+        this.geometry = new THREE.SphereGeometry(this.radius, 64, 64)
         this.instance = new THREE.Group()
 
 
-        /** OUTLINES */
-
+        /** ADD EDGE STROKES */
         this.instance = this.lines.draw({
             geometry: this.geometry,
-            color: 0x000000,
-            thickness: 0.05
+            color: 0xFF5500,
+            thickness: 0.025
         })
+        this.instance.rotation.x = 0.3
 
-        this.fill = this.lines.fill(this.geometry, 0xFF5500)
+        /** ADD FILL */
+        this.fill = this.lines.fill(this.geometry, 0xFFFFFF)
+        // this.fill.scale.setScalar(0.995)
         this.instance.add(this.fill)
 
-
-        this.instance.position.x = 7
+        /** ADD OUTLINE */
+        this.outlineThickness = 0.001
+        this.outline = this.lines.addOutline(this.geometry, new THREE.Color(0xFF5500), this.outlineThickness)
+        this.instance.add(this.outline)
 
 
     }
+
 
 }
 

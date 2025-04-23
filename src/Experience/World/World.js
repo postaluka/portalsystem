@@ -9,6 +9,7 @@ import Cube from './Models/Cube.js';
 import Torus from './Models/Torus.js';
 import Sphere from './Models/Sphere.js';
 import Suzanne from './Models/Suzanne.js';
+import RandomPlanes from './Models/RandomPlanes.js';
 
 
 
@@ -27,6 +28,9 @@ export default class World
         this.sphere = new Sphere()
         this.suzanne = new Suzanne()
 
+        this.randomPlanesCount = 100
+        this.randomPlanes = new RandomPlanes(this.sphere.radius, this.randomPlanesCount)
+
 
 
         // Add lights
@@ -38,26 +42,30 @@ export default class World
 
         // Add models
         this.scene.add(
-
-            this.cube.instance,
-            this.torus.instance,
             this.sphere.instance,
-            this.suzanne.instance
-            // this.space.instance
-
-
-
-
+            this.randomPlanes.instance
         )
 
+        console.log();
 
     }
 
     update()
     {
-        this.cube.instance.rotation.x += this.time.delta * 0.0005
-        this.torus.instance.rotation.x -= this.time.delta * 0.0005
-        this.suzanne.instance.rotation.y += this.time.delta * 0.0001
+        this.speedOffset = 0.0001
+        this.rotationXSpeed = this.time.delta * this.speedOffset
+        this.rotationYSpeed = this.time.delta * this.speedOffset
+
+        this.sphere.instance.rotation.x -= this.rotationXSpeed
+        this.sphere.instance.rotation.y += this.rotationYSpeed
+
+        this.randomPlanes.instance.rotation.x -= this.rotationXSpeed
+        this.randomPlanes.array.forEach((plane) =>
+        {
+            plane.rotation.x = -this.randomPlanes.instance.rotation.x
+        })
+        // this.randomPlanes.instance.rotation.y += this.rotationYSpeed
+
     }
 }
 
