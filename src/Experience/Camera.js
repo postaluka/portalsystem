@@ -45,6 +45,7 @@ export default class Camera
         this.controls.minPolarAngle = Math.PI / 2
         this.controls.minAzimuthAngle = -Math.PI / 5
         this.controls.maxAzimuthAngle = Math.PI / 5
+        this.controls.enableZoom = false
         // this.controls.minDistance = 15
         // this.controls.maxDistance = 21
         this.controls.mouseButtons = {
@@ -52,6 +53,14 @@ export default class Camera
             MIDDLE: null, //THREE.MOUSE.DOLLY,
             RIGHT: null //THREE.MOUSE.PAN
         }
+
+        this.controls.touches = {
+            ONE: THREE.TOUCH.ROTATE,
+            TWO: null // pinch gestures = off
+        }
+
+        this.canvas.addEventListener('wheel', (e) => e.preventDefault(), { passive: false })
+
 
         this.targetCenter = new THREE.Vector3(0, 19, 0)
         this.controls.target.copy(this.targetCenter)
