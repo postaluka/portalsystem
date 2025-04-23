@@ -14,7 +14,7 @@ export default class Camera
         this.canvas = this.experience.canvas
 
         this.setInstance()
-        // this.setControl()
+        this.setControl()
 
         // this.setDebug()
 
@@ -42,13 +42,20 @@ export default class Camera
         this.controls = new OrbitControls(this.instance, this.canvas)
         this.controls.enableDamping = true
         this.controls.maxPolarAngle = Math.PI / 2.1
+        this.controls.minPolarAngle = Math.PI / 2
+        this.controls.minAzimuthAngle = -Math.PI / 5
+        this.controls.maxAzimuthAngle = Math.PI / 5
         // this.controls.minDistance = 15
         // this.controls.maxDistance = 21
         this.controls.mouseButtons = {
             LEFT: THREE.MOUSE.ROTATE,
-            MIDDLE: THREE.MOUSE.DOLLY,
+            MIDDLE: null, //THREE.MOUSE.DOLLY,
             RIGHT: null //THREE.MOUSE.PAN
         }
+
+        this.targetCenter = new THREE.Vector3(0, 19, 0)
+        this.controls.target.copy(this.targetCenter)
+        this.controls.update()
     }
 
     setDebug()
@@ -74,7 +81,7 @@ export default class Camera
 
     update()
     {
-        // this.controls.update()
+        this.controls.update()
         // console.log(
         //     this.instance.position,
         //     this.instance.rotation
