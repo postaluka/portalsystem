@@ -34,7 +34,7 @@ export default class RandomPlanes
     {
         let created = 0;
         const maxDistance = this.radius + this.border;
-        const minDistanceBetween = 2;
+        const minDistanceBetween = 1;
 
         while (created < this.count)
         {
