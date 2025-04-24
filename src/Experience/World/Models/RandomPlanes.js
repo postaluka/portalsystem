@@ -8,6 +8,7 @@ export default class RandomPlanes
     constructor({ radius = 16, border = 2 })
     {
         this.PARAMS = {
+            border: 2,
             count: 300,
             topCutoff: 0.15
         }
@@ -17,7 +18,7 @@ export default class RandomPlanes
 
         this.radius = radius;
         this.count = this.PARAMS.count;
-        this.border = border
+        this.border = this.PARAMS.border
         this.instance = new THREE.Group();
 
         this.instance.rotation.x = 0.33
@@ -30,15 +31,15 @@ export default class RandomPlanes
 
         this.array = []
 
-        this.generatePlanes(this.PARAMS.count);
+        this.generatePlanes(this.PARAMS.count, this.PARAMS.border);
         this.addLabels()
 
         this.debug()
     }
 
-    generatePlanes(count)
+    generatePlanes(count, border)
     {
-        const maxDistance = this.radius + this.border;
+        const maxDistance = this.radius + border;
         const minDistanceBetween = 1;
         const maxAttempts = count * 10; // Щоб уникнути нескінченного циклу
 
@@ -46,9 +47,9 @@ export default class RandomPlanes
 
         for (let attempts = 0, created = 0; attempts < maxAttempts && created < count; attempts++)
         {
-            const distance = this.radius + Math.random() * this.border;
+            const distance = this.radius + Math.random() * border;
 
-            const chance = (distance - this.radius) / this.border;
+            const chance = (distance - this.radius) / border;
             if (Math.random() > chance) continue;
 
             const size = this.sizeVariants[Math.floor(Math.random() * this.sizeVariants.length)];
@@ -188,7 +189,7 @@ export default class RandomPlanes
         this.array = [];
 
         // Згенерувати нові
-        this.generatePlanes(this.PARAMS.count);
+        this.generatePlanes(this.PARAMS.count, this.PARAMS.border);
         this.addLabels();
     }
 
@@ -203,6 +204,10 @@ export default class RandomPlanes
                 this.resetPlanes()
             })
             this.debug.randomPlanesFolder.add(this.PARAMS, 'topCutoff').min(0).max(1).step(0.01).onFinishChange((value) =>
+            {
+                this.resetPlanes()
+            })
+            this.debug.randomPlanesFolder.add(this.PARAMS, 'border').min(0).max(10).step(0.5).name('topLimit').onFinishChange((value) =>
             {
                 this.resetPlanes()
             })
