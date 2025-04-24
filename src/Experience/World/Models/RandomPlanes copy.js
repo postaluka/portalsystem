@@ -17,9 +17,7 @@ export default class RandomPlanes
         this.instance = new THREE.Group();
 
         // Доступні розміри
-        // this.sizeVariants = [0.1, 0.12, 0.16, 0.22];
-        this.sizeVariants = [0.2, 0.24, 0.32];
-
+        this.sizeVariants = [0.1, 0.12, 0.16, 0.22];
         this.labelVariants = Array.from({ length: 10 }, (_, i) => `1998-${i}0A`);
 
         this.array = []
@@ -80,7 +78,6 @@ export default class RandomPlanes
 
     }
 
-
     addLabels()
     {
 
@@ -101,7 +98,7 @@ export default class RandomPlanes
 
                 const textGeo = new TextGeometry(labelText, {
                     font: font,
-                    size: planeSize * 0.85,
+                    size: planeSize * 0.5,
                     height: 0.001,
                     curveSegments: 4,
                     bevelEnabled: false
@@ -124,36 +121,6 @@ export default class RandomPlanes
                 plane.add(label);
             });
         });
-    }
-
-    sizeCameraDistance()
-    {
-        const tempVec = new THREE.Vector3()
-
-        this.array.forEach((plane) =>
-        {
-            plane.getWorldPosition(tempVec)
-            const z = tempVec.z
-
-            const baseSize = plane.geometry.parameters.width
-
-            // Нормалізуємо в діапазоні 15 (близько) до -15 (далеко)
-            const t = THREE.MathUtils.clamp((15 - z) / 30, 0, 1)
-
-            // Обчислюємо новий розмір
-            const newSize = THREE.MathUtils.lerp(baseSize, 0.01, t)
-
-            // Масштабуємо плейн
-            const scale = newSize / baseSize
-            plane.scale.setScalar(scale)
-
-        })
-    }
-
-    update()
-    {
-        this.sizeCameraDistance()
-
     }
 
 } 

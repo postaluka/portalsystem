@@ -39,11 +39,11 @@ export default class World
 
 
         // Add lights
-        this.scene.add(
-            // this.lights.directional,
-            // this.lights.directionalHelper,
-            // this.lights.directionalCameraHelper,
-        )
+        // this.scene.add(
+        //     // this.lights.directional,
+        //     // this.lights.directionalHelper,
+        //     // this.lights.directionalCameraHelper,
+        // )
 
         // Add models
         this.rotationGroup.add(
@@ -116,7 +116,8 @@ export default class World
         {
             plane.rotation.x = -this.randomPlanes.instance.rotation.x
         })
-        // this.randomPlanes.instance.rotation.y += this.rotationYSpeed
+
+        this.randomPlanes.update()
 
     }
 }
