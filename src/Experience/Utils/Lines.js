@@ -6,8 +6,9 @@ import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js
 
 export default class Lines 
 {
-    constructor()
+    constructor(step = 2)
     {
+        this.stepWidth = step
 
 
     }
@@ -17,6 +18,8 @@ export default class Lines
         color = 0x00ff00,
         thickness = 0.2,
         resolution = new THREE.Vector2(window.innerWidth, window.innerHeight),
+        stepWidth = 2,
+        longSteps = 12
     })
     {
         // 1. Створюємо EdgesGeometry з твоєї геометрії
@@ -30,10 +33,10 @@ export default class Lines
         this.lineSegmentsGeometry = new LineSegmentsGeometry()
 
         this.filteredPositions = []
-        this.onlyWidth(this.stepWidth)
+        this.onlyWidth(stepWidth)
         this.addGeneratedMeridians({
             radius: 14, // або твій this.side
-            longSteps: 12 // кількість меридіанів
+            longSteps: longSteps // кількість меридіанів
         })
         // this.addBottomParallel({
         //     radius: 14,
@@ -89,7 +92,7 @@ export default class Lines
         return this.fillColor
     }
 
-    onlyWidth()
+    onlyWidth(stepWidth = 2)
     {
 
         // Крок для округлення Y (щоб об'єднати близькі рівні в одну "широту")
@@ -130,10 +133,9 @@ export default class Lines
 
         const yKeys = Object.keys(this.yGroups).sort((a, b) => parseFloat(b) - parseFloat(a)) // від верху до низу
 
-        this.stepWidth = 2
         for (let i = 0; i < yKeys.length; i++)
         {
-            if (i % this.stepWidth !== 0) continue // пропускаємо кожну другу паралель
+            if (i % stepWidth !== 0) continue // пропускаємо кожну другу паралель
 
             const group = this.yGroups[yKeys[i]]
             for (const [a, b] of group)

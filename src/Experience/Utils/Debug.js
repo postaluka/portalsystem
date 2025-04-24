@@ -13,6 +13,7 @@ export default class Debug
             this.ui = new dat.GUI()
             this.cameraFolder = this.ui.addFolder('Camera')
             this.randomPlanesFolder = this.ui.addFolder('Random Planes')
+            this.sphereFolder = this.ui.addFolder('Sphere')
         }
     }
 

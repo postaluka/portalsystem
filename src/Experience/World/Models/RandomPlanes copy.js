@@ -3,7 +3,6 @@ import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'
 import gsap from "gsap";
 
 import Experience from "../../Experience";
-import { value } from "canvas-sketch-util/random";
 
 export default class RandomPlanes
 {
@@ -13,7 +12,6 @@ export default class RandomPlanes
             border: 2,
             count: 300,
             topCutoff: 0.15,
-            maxSize: 1,
         }
         this.experience = new Experience()
         this.camera = this.experience.camera.instance
@@ -119,12 +117,13 @@ export default class RandomPlanes
 
             this.array.forEach((plane, index) =>
             {
-                // if (index % 7 !== 0) return;
+                if (index % 2 !== 0) return;
                 if (plane.geometry.parameters.width !== this.sizeVariants[2]) return
 
 
                 const planeColor = plane.material.color
                 const textMaterial = new THREE.MeshBasicMaterial({ color: new THREE.Color(planeColor) });
+
 
                 const planeSize = plane.geometry.parameters.width
                 const labelText = this.labelVariants[Math.floor(Math.random() * this.labelVariants.length)];
@@ -138,8 +137,6 @@ export default class RandomPlanes
                 });
 
                 const textMesh = new THREE.Mesh(textGeo, textMaterial);
-                plane.userData.textMesh = textMesh;
-                plane.userData.textMaterial = textMaterial
 
                 textGeo.computeBoundingBox();
                 const textWidth = textGeo.boundingBox.max.x - textGeo.boundingBox.min.x;
@@ -177,7 +174,7 @@ export default class RandomPlanes
             const newSize = THREE.MathUtils.lerp(baseSize * 1.4, 0.001, t)
 
             // Масштабуємо плейн
-            const scale = newSize / baseSize * this.PARAMS.maxSize
+            const scale = newSize / baseSize
             plane.scale.setScalar(scale)
 
         })
@@ -187,59 +184,41 @@ export default class RandomPlanes
     highlightPlane()
     {
         const tempVec = new THREE.Vector3()
-        const zBorder = 6
+        const zBorder = 7
+
+
 
         this.array.forEach((plane) =>
         {
             plane.getWorldPosition(tempVec)
             const z = tempVec.z
 
-            const labelMaterial = plane.userData.textMaterial
 
             if (plane.userData.colorLabel === 'orange' && z >= zBorder)
             {
 
                 plane.material.color = new THREE.Color(0xFF5500)
-                // plane.label.material.color = new THREE.Color(0xFF5500)
-                labelMaterial?.color.set(0xFF5500)
+                gsap.to(
+                    plane.rotation, {
+                    z: plane.rotation.z + Math.PI / 4 + Math.PI * 2,
+                    duration: 1
+                })
+
+
 
             } else if (plane.userData.colorLabel === 'orange' && z < zBorder)
             {
                 plane.material.color = new THREE.Color(0x000000)
-                // plane.label.material.color = new THREE.Color(0x000000)
-                labelMaterial?.color.set(0x000000)
+                gsap.to(
+                    plane.rotation, {
+                    z: plane.rotation.z - Math.PI,
+                    duration: 0.5
+                })
             }
         })
 
 
     }
-
-    highlightText()
-    {
-        const tempVec = new THREE.Vector3();
-        const zBorder = 5;
-
-        this.array.forEach((plane) =>
-        {
-            plane.getWorldPosition(tempVec);
-            const z = tempVec.z;
-
-            const textMesh = plane.userData.textMesh;
-            if (!textMesh) return;
-
-            if (z < zBorder)
-            {
-                textMesh.scale.setScalar(0.0001); // практично невидимий
-            }
-            else
-            {
-                textMesh.scale.setScalar(1); // повертаємо нормальний розмір
-            }
-        });
-    }
-
-
-
 
     resetPlanes()
     {
@@ -278,10 +257,6 @@ export default class RandomPlanes
         {
             this.setFunctions()
             this.debug.randomPlanesFolder.add(this.functions, 'reset').name('reset current values')
-            this.debug.randomPlanesFolder.add(this.PARAMS, 'maxSize').min(0.05).max(1).step(0.01).onFinishChange((value) =>
-            {
-                this.resetPlanes()
-            })
             this.debug.randomPlanesFolder.add(this.PARAMS, 'count').min(50).max(1000).step(1).onFinishChange((value) =>
             {
                 this.resetPlanes()
@@ -301,7 +276,6 @@ export default class RandomPlanes
     {
         this.sizeCameraDistance()
         this.highlightPlane()
-        this.highlightText()
 
     }
 
