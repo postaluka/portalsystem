@@ -35,11 +35,11 @@ export default class Lines
             radius: 14, // або твій this.side
             longSteps: 12 // кількість меридіанів
         })
-        this.addBottomParallel({
-            radius: 14,
-            longSteps: 48,
-            phi: Math.PI * 0.985
-        })
+        // this.addBottomParallel({
+        //     radius: 14,
+        //     longSteps: 48,
+        //     phi: Math.PI * 0.985
+        // })
 
 
         // this.lineSegmentsGeometry.setPositions(this.edgePositions)
@@ -130,7 +130,7 @@ export default class Lines
 
         const yKeys = Object.keys(this.yGroups).sort((a, b) => parseFloat(b) - parseFloat(a)) // від верху до низу
 
-        this.stepWidth = 3
+        this.stepWidth = 7
         for (let i = 0; i < yKeys.length; i++)
         {
             if (i % this.stepWidth !== 0) continue // пропускаємо кожну другу паралель
@@ -148,7 +148,7 @@ export default class Lines
 
     addGeneratedMeridians({
         radius = 1,
-        latSteps = 32,
+        latSteps = 80,
         longSteps = 3 // Кількість меридіанів
     })
     {

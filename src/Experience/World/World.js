@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import gsap from 'gsap'
 
 
 import Experience from "../Experience.js";
@@ -20,6 +21,7 @@ export default class World
         this.experience = new Experience()
         this.time = this.experience.time
         this.scene = this.experience.scene
+        this.sizes = this.experience.sizes
 
         this.lights = new Lights()
 
@@ -31,33 +33,83 @@ export default class World
         this.randomPlanesCount = 100
         this.randomPlanes = new RandomPlanes(this.sphere.radius, this.randomPlanesCount)
 
+        this.rotationGroup = new THREE.Group()
+        this.scene.add(this.rotationGroup)
+
 
 
         // Add lights
         this.scene.add(
-            this.lights.directional,
+            // this.lights.directional,
             // this.lights.directionalHelper,
             // this.lights.directionalCameraHelper,
         )
 
         // Add models
-        this.scene.add(
+        this.rotationGroup.add(
             this.sphere.instance,
             this.randomPlanes.instance
         )
 
-        console.log();
+        this.setCursor()
+
+
+
+    }
+
+    setCursor() 
+    {
+        this.cursor = {}
+        this.cursor.x = 0
+        this.cursor.y = 0
+        window.addEventListener('mousemove', (event) =>
+        {
+            this.cursor.x = event.clientX / this.sizes.width - 0.5
+            this.cursor.y = event.clientY / this.sizes.height - 0.5
+
+        })
+    }
+
+    // setParallax()
+    // {
+    //     this.easing = 0.06
+
+    //     this.parallaxRotationY = this.cursor.x * 0.25
+
+    //     this.rotationGroup.rotation.y += (this.parallaxRotationY - this.rotationGroup.rotation.y) * this.easing
+
+
+    // }
+
+    setParallax()
+    {
+        const rotationTarget = this.cursor.x * 0.25
+        const positionTarget = - this.cursor.y * 0.25
+
+
+        gsap.to(this.rotationGroup.rotation, {
+            y: rotationTarget,
+            duration: 4,
+            ease: "back.out(4)",
+        })
+
+        gsap.to(this.rotationGroup.position, {
+            y: positionTarget,
+            duration: 4,
+            ease: "back.out(4)",
+        })
 
     }
 
     update()
     {
+        this.setParallax()
+
         this.speedOffset = 0.0001
         this.rotationXSpeed = this.time.delta * this.speedOffset
         this.rotationYSpeed = this.time.delta * this.speedOffset
 
         this.sphere.instance.rotation.x -= this.rotationXSpeed
-        this.sphere.instance.rotation.y += this.rotationYSpeed
 
         this.randomPlanes.instance.rotation.x -= this.rotationXSpeed
         this.randomPlanes.array.forEach((plane) =>

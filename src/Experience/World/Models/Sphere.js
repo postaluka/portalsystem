@@ -25,7 +25,7 @@ export default class Sphere
 
 
 
-        this.geometry = new THREE.SphereGeometry(this.radius, 64, 64)
+        this.geometry = new THREE.SphereGeometry(this.radius, 100, 100)
         this.instance = new THREE.Group()
 
 

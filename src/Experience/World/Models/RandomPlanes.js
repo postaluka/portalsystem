@@ -68,7 +68,7 @@ export default class RandomPlanes
             const z = distance * Math.sin(phi) * Math.sin(theta);
 
             plane.position.set(x, y, z);
-            plane.lookAt(this.camera.position);
+            // plane.lookAt(this.camera.position);
 
             this.instance.add(plane);
             this.array.push(plane);

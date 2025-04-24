@@ -19,7 +19,6 @@ export default class Loaders
 
         this.font = new FontLoader()
 
-        console.log(this.font);
 
 
 

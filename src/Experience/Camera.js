@@ -14,7 +14,7 @@ export default class Camera
         this.canvas = this.experience.canvas
 
         this.setInstance()
-        this.setControl()
+        // this.setControl()
 
         // this.setDebug()
 
@@ -90,7 +90,7 @@ export default class Camera
 
     update()
     {
-        this.controls.update()
+        // this.controls.update()
         // console.log(
         //     this.instance.position,
         //     this.instance.rotation
