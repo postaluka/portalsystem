@@ -37,14 +37,6 @@ export default class World
         this.scene.add(this.rotationGroup)
 
 
-
-        // Add lights
-        // this.scene.add(
-        //     // this.lights.directional,
-        //     // this.lights.directionalHelper,
-        //     // this.lights.directionalCameraHelper,
-        // )
-
         // Add models
         this.rotationGroup.add(
             this.sphere.instance,
@@ -114,10 +106,12 @@ export default class World
         this.randomPlanes.instance.rotation.y += this.rotationXSpeed
         this.randomPlanes.array.forEach((plane) =>
         {
-            const worldPosition = new THREE.Vector3()
-            this.experience.camera.instance.getWorldPosition(worldPosition)
+            const worldPosition = new THREE.Vector3(0, 0, 100)
+            // this.experience.camera.instance.getWorldPosition(worldPosition)
             plane.lookAt(worldPosition)
         })
+
+
 
         this.randomPlanes.update()
 

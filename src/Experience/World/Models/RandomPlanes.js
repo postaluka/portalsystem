@@ -5,7 +5,7 @@ import Experience from "../../Experience";
 
 export default class RandomPlanes
 {
-    constructor({ radius = 16, count = 300, border = 2 })
+    constructor({ radius = 16, count = 300, border = 0.5 })
     {
         this.experience = new Experience()
         this.camera = this.experience.camera.instance
@@ -16,9 +16,11 @@ export default class RandomPlanes
         this.border = border
         this.instance = new THREE.Group();
 
+        this.instance.rotation.x = 0.33
+
         // Доступні розміри
         // this.sizeVariants = [0.1, 0.12, 0.16, 0.22];
-        this.sizeVariants = [0.2, 0.24, 0.32];
+        this.sizeVariants = [0.2, 0.24, 0.25];
 
         this.labelVariants = Array.from({ length: 10 }, (_, i) => `1998-${i}0A`);
 
@@ -32,19 +34,17 @@ export default class RandomPlanes
     {
         let created = 0;
         const maxDistance = this.radius + this.border;
+        const minDistanceBetween = 2;
 
         while (created < this.count)
         {
             const distance = this.radius + Math.random() * this.border;
 
-            // Збільшуємо шанс створення плейна на великій відстані
-            const chance = (distance - this.radius) / this.border; // 0 → близько, 1 → далі
-            if (Math.random() > chance) continue; // пропускаємо, якщо занадто близько
+            const chance = (distance - this.radius) / this.border;
+            if (Math.random() > chance) continue;
 
-            // Випадковий розмір
             const size = this.sizeVariants[Math.floor(Math.random() * this.sizeVariants.length)];
 
-            // Геометрія та матеріал
             const colors = [
                 new THREE.Color(0xFF5500),
                 new THREE.Color('black'),
@@ -62,16 +62,38 @@ export default class RandomPlanes
             plane.rotation.x = Math.PI;
 
             // Випадкове положення в сферичному просторі
+            // const theta = Math.random() * Math.PI * 2;
+            // const phi = Math.acos(THREE.MathUtils.randFloat(-1, 1));
+
+            // Випадкове положення в сферичному просторі (тільки верхня половина)
+            const topCutoff = 0.1 // 15%
+            const phiMin = Math.PI * topCutoff / 2
+            const phiMax = Math.PI / 2
+
             const theta = Math.random() * Math.PI * 2;
-            const phi = Math.random() * Math.PI;
+
+            const phi = Math.random() * (phiMax - phiMin) + phiMin
 
             const x = distance * Math.sin(phi) * Math.cos(theta);
             const y = distance * Math.cos(phi);
             const z = distance * Math.sin(phi) * Math.sin(theta);
 
-            plane.position.set(x, y, z);
-            // plane.lookAt(this.camera.position);
+            const newPosition = new THREE.Vector3(x, y, z);
 
+            // Перевірка мінімальної відстані до інших
+            let tooClose = false;
+            for (const other of this.array)
+            {
+                if (newPosition.distanceTo(other.position) < minDistanceBetween)
+                {
+                    tooClose = true;
+                    break;
+                }
+            }
+
+            if (tooClose) continue;
+
+            plane.position.copy(newPosition);
             this.instance.add(plane);
             this.array.push(plane);
 
@@ -90,7 +112,9 @@ export default class RandomPlanes
 
             this.array.forEach((plane, index) =>
             {
-                if (index % 4 !== 0) return;
+                // if (index % 2 !== 0) return;
+                if (plane.geometry.parameters.width !== this.sizeVariants[2]) return
+
 
                 const planeColor = plane.material.color
                 const textMaterial = new THREE.MeshBasicMaterial({ color: new THREE.Color(planeColor) });
@@ -141,7 +165,7 @@ export default class RandomPlanes
             const t = THREE.MathUtils.clamp((15 - z) / 30, 0, 1)
 
             // Обчислюємо новий розмір
-            const newSize = THREE.MathUtils.lerp(baseSize, 0.01, t)
+            const newSize = THREE.MathUtils.lerp(baseSize * 1.4, 0.001, t)
 
             // Масштабуємо плейн
             const scale = newSize / baseSize
