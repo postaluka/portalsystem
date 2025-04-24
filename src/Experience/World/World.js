@@ -61,40 +61,31 @@ export default class World
         })
     }
 
-    // setParallax()
-    // {
-    //     this.easing = 0.06
 
-    //     this.parallaxRotationY = this.cursor.x * 0.25
-
-    //     this.rotationGroup.rotation.y += (this.parallaxRotationY - this.rotationGroup.rotation.y) * this.easing
-
-
-    // }
 
     setParallax()
     {
-        const rotationTarget = this.cursor.x * 0.25
-        const positionTarget = - this.cursor.y * 0.25
+        const rotationTarget = this.cursor.y * 0.05
+        const positionTarget = this.cursor.x * 0.5
 
 
         gsap.to(this.rotationGroup.rotation, {
-            y: rotationTarget,
+            x: rotationTarget,
+            duration: 4,
+            ease: "back.out(4)",
+        })
+        gsap.to(this.rotationGroup.position, {
+            x: positionTarget,
             duration: 4,
             ease: "back.out(4)",
         })
 
-        gsap.to(this.rotationGroup.position, {
-            y: positionTarget,
-            duration: 4,
-            ease: "back.out(4)",
-        })
 
     }
 
     update()
     {
-        // this.setParallax()
+        this.setParallax()
 
         this.speedOffset = 0.0001
         this.rotationXSpeed = this.time.delta * this.speedOffset
