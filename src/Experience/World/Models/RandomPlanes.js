@@ -3,7 +3,7 @@ import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'
 import gsap from "gsap";
 
 import Experience from "../../Experience";
-import { value } from "canvas-sketch-util/random";
+
 
 export default class RandomPlanes
 {

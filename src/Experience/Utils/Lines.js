@@ -38,11 +38,7 @@ export default class Lines
             radius: 14, // або твій this.side
             longSteps: longSteps // кількість меридіанів
         })
-        // this.addBottomParallel({
-        //     radius: 14,
-        //     longSteps: 48,
-        //     phi: Math.PI * 0.985
-        // })
+
 
 
         // this.lineSegmentsGeometry.setPositions(this.edgePositions)

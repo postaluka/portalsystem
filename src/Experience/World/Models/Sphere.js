@@ -3,7 +3,7 @@ import * as THREE from "three"
 import Experience from "../../Experience.js"
 
 import Lines from "../../Utils/Lines.js"
-import { value } from "canvas-sketch-util/random.js"
+
 
 
 export default class Sphere
