@@ -25,7 +25,7 @@ export default class Sphere
 
 
 
-        this.geometry = new THREE.SphereGeometry(this.radius, 100, 100)
+        this.geometry = new THREE.SphereGeometry(this.radius, 100, 40)
         this.instance = new THREE.Group()
 
 
@@ -35,7 +35,7 @@ export default class Sphere
             color: 0xFF5500,
             thickness: 0.025
         })
-        this.instance.rotation.x = 0.3
+        this.instance.rotation.x = 0.33
 
         /** ADD FILL */
         this.fill = this.lines.fill(this.geometry, 0xFFFFFF)

@@ -130,7 +130,7 @@ export default class Lines
 
         const yKeys = Object.keys(this.yGroups).sort((a, b) => parseFloat(b) - parseFloat(a)) // від верху до низу
 
-        this.stepWidth = 7
+        this.stepWidth = 2
         for (let i = 0; i < yKeys.length; i++)
         {
             if (i % this.stepWidth !== 0) continue // пропускаємо кожну другу паралель

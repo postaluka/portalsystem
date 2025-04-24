@@ -103,18 +103,20 @@ export default class World
 
     update()
     {
-        this.setParallax()
+        // this.setParallax()
 
         this.speedOffset = 0.0001
         this.rotationXSpeed = this.time.delta * this.speedOffset
         this.rotationYSpeed = this.time.delta * this.speedOffset
 
-        this.sphere.instance.rotation.x -= this.rotationXSpeed
+        this.sphere.instance.rotation.y += this.rotationXSpeed
 
-        this.randomPlanes.instance.rotation.x -= this.rotationXSpeed
+        this.randomPlanes.instance.rotation.y += this.rotationXSpeed
         this.randomPlanes.array.forEach((plane) =>
         {
-            plane.rotation.x = -this.randomPlanes.instance.rotation.x
+            const worldPosition = new THREE.Vector3()
+            this.experience.camera.instance.getWorldPosition(worldPosition)
+            plane.lookAt(worldPosition)
         })
 
         this.randomPlanes.update()
