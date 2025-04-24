@@ -5,14 +5,18 @@ import Experience from "../../Experience";
 
 export default class RandomPlanes
 {
-    constructor({ radius = 16, count = 300, border = 0.5 })
+    constructor({ radius = 16, border = 2 })
     {
+        this.PARAMS = {
+            count: 300,
+            topCutoff: 0.15
+        }
         this.experience = new Experience()
         this.camera = this.experience.camera.instance
         this.loader = this.experience.loaders
 
         this.radius = radius;
-        this.count = count;
+        this.count = this.PARAMS.count;
         this.border = border
         this.instance = new THREE.Group();
 
@@ -26,17 +30,21 @@ export default class RandomPlanes
 
         this.array = []
 
-        this.generatePlanes();
+        this.generatePlanes(this.PARAMS.count);
         this.addLabels()
+
+        this.debug()
     }
 
-    generatePlanes()
+    generatePlanes(count)
     {
-        let created = 0;
         const maxDistance = this.radius + this.border;
         const minDistanceBetween = 1;
+        const maxAttempts = count * 10; // Щоб уникнути нескінченного циклу
 
-        while (created < this.count)
+        this.array = []
+
+        for (let attempts = 0, created = 0; attempts < maxAttempts && created < count; attempts++)
         {
             const distance = this.radius + Math.random() * this.border;
 
@@ -50,8 +58,8 @@ export default class RandomPlanes
                 new THREE.Color('black'),
                 new THREE.Color('black'),
                 new THREE.Color('black'),
-            ]
-            const color = colors[Math.floor(Math.random() * colors.length)]
+            ];
+            const color = colors[Math.floor(Math.random() * colors.length)];
             const geometry = new THREE.PlaneGeometry(size, size);
             const material = new THREE.MeshBasicMaterial({
                 color: new THREE.Color(color),
@@ -61,18 +69,13 @@ export default class RandomPlanes
             const plane = new THREE.Mesh(geometry, material);
             plane.rotation.x = Math.PI;
 
-            // Випадкове положення в сферичному просторі
-            // const theta = Math.random() * Math.PI * 2;
-            // const phi = Math.acos(THREE.MathUtils.randFloat(-1, 1));
-
-            // Випадкове положення в сферичному просторі (тільки верхня половина)
-            const topCutoff = 0.1 // 15%
-            const phiMin = Math.PI * topCutoff / 2
-            const phiMax = Math.PI / 2
+            // Верхня півкуля з урізанням
+            const topCutoff = this.PARAMS.topCutoff;
+            const phiMin = Math.PI * topCutoff / 2;
+            const phiMax = Math.PI / 2;
 
             const theta = Math.random() * Math.PI * 2;
-
-            const phi = Math.random() * (phiMax - phiMin) + phiMin
+            const phi = Math.random() * (phiMax - phiMin) + phiMin;
 
             const x = distance * Math.sin(phi) * Math.cos(theta);
             const y = distance * Math.cos(phi);
@@ -80,7 +83,6 @@ export default class RandomPlanes
 
             const newPosition = new THREE.Vector3(x, y, z);
 
-            // Перевірка мінімальної відстані до інших
             let tooClose = false;
             for (const other of this.array)
             {
@@ -96,11 +98,10 @@ export default class RandomPlanes
             plane.position.copy(newPosition);
             this.instance.add(plane);
             this.array.push(plane);
-
             created++;
         }
-
     }
+
 
 
     addLabels()
@@ -112,7 +113,7 @@ export default class RandomPlanes
 
             this.array.forEach((plane, index) =>
             {
-                // if (index % 2 !== 0) return;
+                if (index % 2 !== 0) return;
                 if (plane.geometry.parameters.width !== this.sizeVariants[2]) return
 
 
@@ -172,6 +173,40 @@ export default class RandomPlanes
             plane.scale.setScalar(scale)
 
         })
+    }
+
+    resetPlanes()
+    {
+        // Видалити старі плейни з групи і памʼяті
+        this.array.forEach((plane) =>
+        {
+            this.instance.remove(plane);
+            plane.geometry.dispose();
+            plane.material.dispose();
+        });
+
+        this.array = [];
+
+        // Згенерувати нові
+        this.generatePlanes(this.PARAMS.count);
+        this.addLabels();
+    }
+
+    debug()
+    {
+        this.debug = this.experience.debug
+
+        if (this.debug.active)
+        {
+            this.debug.randomPlanesFolder.add(this.PARAMS, 'count').min(50).max(1000).step(1).onFinishChange((value) =>
+            {
+                this.resetPlanes()
+            })
+            this.debug.randomPlanesFolder.add(this.PARAMS, 'topCutoff').min(0).max(1).step(0.01).onFinishChange((value) =>
+            {
+                this.resetPlanes()
+            })
+        }
     }
 
     update()

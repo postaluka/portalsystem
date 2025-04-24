@@ -16,7 +16,7 @@ export default class Camera
         this.setInstance()
         // this.setControl()
 
-        // this.setDebug()
+        this.debug()
 
     }
 
@@ -67,25 +67,39 @@ export default class Camera
         this.controls.update()
     }
 
-    setDebug()
-    {
-        // Debug
-        this.debug = this.experience.debug
-        if (this.debug.active)
-        {
-            this.debug.ui.add(this.instance.position, 'x', -50, 50, 0.01).name('camera.position.x')
-            this.debug.ui.add(this.instance.position, 'y', -50, 50, 0.01).name('camera.position.y')
-            this.debug.ui.add(this.instance.position, 'z', -50, 50, 0.01).name('camera.position.z')
-            this.debug.ui.add(this.instance.rotation, 'x', -Math.PI * 2, Math.PI * 2, 0.01).name('camera.rotation.x')
-            this.debug.ui.add(this.instance.rotation, 'y', -Math.PI * 2, Math.PI * 2, 0.01).name('camera.rotation.y')
-            this.debug.ui.add(this.instance.rotation, 'z', -Math.PI * 2, Math.PI * 2, 0.01).name('camera.rotation.z')
-        }
-    }
 
     resize()
     {
         this.instance.aspect = this.sizes.width / this.sizes.height
         this.instance.updateProjectionMatrix()
+    }
+
+    setCameraPosition()
+    {
+        this.cameraFunctions = {
+            cameraScene: () =>
+            {
+                this.instance.position.set(0, 19, 30)
+            },
+
+            cameraGlobal: () =>
+            {
+                this.instance.position.set(0, 0, 100)
+            }
+        }
+
+    }
+
+    debug()
+    {
+        this.setCameraPosition()
+
+        this.debug = this.experience.debug
+        if (this.debug.active)
+        {
+            this.debug.cameraFolder.add(this.cameraFunctions, 'cameraScene').name('cameraScene')
+            this.debug.cameraFolder.add(this.cameraFunctions, 'cameraGlobal').name('cameraGlobal')
+        }
     }
 
     update()

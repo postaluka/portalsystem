@@ -11,6 +11,8 @@ export default class Debug
         if (this.active)
         {
             this.ui = new dat.GUI()
+            this.cameraFolder = this.ui.addFolder('Camera')
+            this.randomPlanesFolder = this.ui.addFolder('Random Planes')
         }
     }
 

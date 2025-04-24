@@ -30,8 +30,7 @@ export default class World
         this.sphere = new Sphere()
         this.suzanne = new Suzanne()
 
-        this.randomPlanesCount = 100
-        this.randomPlanes = new RandomPlanes(this.sphere.radius, this.randomPlanesCount)
+        this.randomPlanes = new RandomPlanes(this.sphere.radius)
 
         this.rotationGroup = new THREE.Group()
         this.scene.add(this.rotationGroup)
