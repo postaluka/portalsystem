@@ -3,16 +3,21 @@ import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'
 import gsap from "gsap";
 
 import Experience from "../../Experience";
+import PARAMS from "../../Utils/PARAMS";
 
 export default class RandomPlanes
 {
     constructor({ radius = 16, border = 2 })
     {
-        this.PARAMS = {
-            border: 2,
-            count: 300,
-            topCutoff: 0.15,
-        }
+        // this.PARAMS = {
+        //     border: 2,
+        //     count: 300,
+        //     topCutoff: 0.15,
+        // }
+
+        this.PARAMS = PARAMS
+
+
         this.experience = new Experience()
         this.camera = this.experience.camera.instance
         this.loader = this.experience.loaders

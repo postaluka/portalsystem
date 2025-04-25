@@ -3,18 +3,16 @@ import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'
 import gsap from "gsap";
 
 import Experience from "../../Experience";
+import PARAMS from "../../Utils/PARAMS";
 
 
 export default class RandomPlanes
 {
     constructor({ radius = 16, border = 2 })
     {
-        this.PARAMS = {
-            border: 2,
-            count: 300,
-            topCutoff: 0.15,
-            maxSize: 1,
-        }
+
+        this.PARAMS = PARAMS
+
         this.experience = new Experience()
         this.camera = this.experience.camera.instance
         this.loader = this.experience.loaders
@@ -119,6 +117,7 @@ export default class RandomPlanes
 
             this.array.forEach((plane, index) =>
             {
+                // if (0 === 0) return
                 // if (index % 7 !== 0) return;
                 if (plane.geometry.parameters.width !== this.sizeVariants[2]) return
 
@@ -277,7 +276,7 @@ export default class RandomPlanes
         if (this.debug.active)
         {
             this.setFunctions()
-            this.debug.randomPlanesFolder.add(this.functions, 'reset').name('reset current values')
+            this.debug.randomPlanesFolder.add(this.functions, 'reset').name('check random iterations')
             this.debug.randomPlanesFolder.add(this.PARAMS, 'maxSize').min(0.05).max(1).step(0.01).onFinishChange((value) =>
             {
                 this.resetPlanes()

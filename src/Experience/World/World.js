@@ -2,7 +2,9 @@ import * as THREE from 'three'
 import gsap from 'gsap'
 
 
+import PARAMS from '../Utils/PARAMS.js';
 import Experience from "../Experience.js";
+
 
 import Lights from './Lights.js';
 
@@ -18,6 +20,12 @@ export default class World
 {
     constructor()
     {
+        // this.PARAMS = {
+        //     rotationScene: 0
+        // }
+
+        this.PARAMS = PARAMS
+
         this.experience = new Experience()
         this.time = this.experience.time
         this.scene = this.experience.scene
@@ -43,6 +51,8 @@ export default class World
         )
 
         this.setCursor()
+
+        this.debug()
 
 
 
@@ -74,11 +84,11 @@ export default class World
             duration: 4,
             ease: "back.out(4)",
         })
-        gsap.to(this.rotationGroup.position, {
-            x: positionTarget,
-            duration: 4,
-            ease: "back.out(4)",
-        })
+        // gsap.to(this.rotationGroup.position, {
+        //     x: positionTarget,
+        //     duration: 4,
+        //     ease: "back.out(4)",
+        // })
 
 
     }
@@ -102,10 +112,66 @@ export default class World
         })
 
 
-
-
         this.randomPlanes.update()
 
+    }
+
+    debug()
+    {
+
+        this.debug = this.experience.debug
+        if (this.debug.active)
+        {
+            this.debug.sceneFolder.add(this.PARAMS, 'rotationScene').name('Scene rotation').min(0).max(Math.PI / 2).step(0.1).onChange((value) =>
+            {
+                this.sphere.instance.rotation.y += value
+                this.randomPlanes.instance.rotation.y += value
+            })
+
+            this.debug.templateFolder.add({
+                export: () =>
+                {
+                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.PARAMS, null, 2));
+                    const downloadAnchorNode = document.createElement('a');
+                    downloadAnchorNode.setAttribute("href", dataStr);
+                    downloadAnchorNode.setAttribute("download", "params.json");
+                    document.body.appendChild(downloadAnchorNode);
+                    downloadAnchorNode.click();
+                    downloadAnchorNode.remove();
+                }
+            }, 'export').name('💾 Export JSON')
+
+            this.debug.templateFolder.add({
+                import: () =>
+                {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = '.json';
+                    input.onchange = (event) =>
+                    {
+                        const file = event.target.files[0];
+                        const reader = new FileReader();
+                        reader.onload = (e) =>
+                        {
+                            try
+                            {
+                                const imported = JSON.parse(e.target.result);
+                                Object.assign(this.PARAMS, imported);
+                                this.randomPlanes.resetPlanes(); // 🔁 одразу оновити
+                                console.log('✅ PARAMS imported', this.PARAMS);
+                            }
+                            catch (err)
+                            {
+                                console.error('❌ Error importing PARAMS:', err);
+                            }
+                        }
+                        reader.readAsText(file);
+                    }
+                    input.click();
+                }
+            }, 'import').name('📂 Import JSON')
+
+        }
     }
 }
 

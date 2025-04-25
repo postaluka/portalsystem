@@ -3,6 +3,7 @@ import * as THREE from "three"
 import Experience from "../../Experience.js"
 
 import Lines from "../../Utils/Lines.js"
+import PARAMS from "../../Utils/PARAMS.js"
 
 
 
@@ -11,14 +12,16 @@ export default class Sphere
     constructor()
     {
 
-        this.PARAMS = {
-            stroke: 0.025,
-            outline: 0.001,
-            stepWidth: 2,
-            longSteps: 12,
-            widthSegments: 100,
-            heightSegments: 40
-        }
+        // this.PARAMS = {
+        //     stroke: 0.025,
+        //     outline: 0.001,
+        //     stepWidth: 2,
+        //     longSteps: 12,
+        //     widthSegments: 100,
+        //     heightSegments: 40
+        // }
+
+        this.PARAMS = PARAMS
 
         this.experience = new Experience()
         this.lines = new Lines(this.PARAMS.stepWidth)
@@ -69,7 +72,7 @@ export default class Sphere
 
     addFill()
     {
-        this.fill = this.lines.fill(this.geometry, 0xFFFFFF)
+        this.fill = this.lines.fill(this.geometry, 0xE7E6E3)
         this.instance.add(this.fill)
     }
 
