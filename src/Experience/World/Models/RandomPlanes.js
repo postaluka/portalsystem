@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'
 import gsap from "gsap";
+import { Text } from 'troika-three-text'
 
 import Experience from "../../Experience";
 import PARAMS from "../../Utils/PARAMS";
@@ -8,10 +9,12 @@ import PARAMS from "../../Utils/PARAMS";
 
 export default class RandomPlanes
 {
-    constructor({ radius = 16, border = 2 })
+    constructor({ radius = 16 })
     {
 
         this.PARAMS = PARAMS
+
+
 
         this.experience = new Experience()
         this.camera = this.experience.camera.instance
@@ -32,9 +35,9 @@ export default class RandomPlanes
         this.array = []
 
         this.generatePlanes(this.PARAMS.count, this.PARAMS.border);
-        this.addLabels()
 
         this.debug()
+
     }
 
     generatePlanes(count, border)
@@ -55,6 +58,8 @@ export default class RandomPlanes
             const size = this.sizeVariants[Math.floor(Math.random() * this.sizeVariants.length)];
 
             const colorLabelArray = [
+                'orange',
+                'black',
                 'orange',
                 'black',
                 'black',
@@ -102,60 +107,42 @@ export default class RandomPlanes
             plane.position.copy(newPosition);
             this.instance.add(plane);
             this.array.push(plane);
+
+            this.addText(plane, size)
             created++;
         }
     }
 
-
-
-    addLabels()
+    addText(plane, size)
     {
 
+        // 🔠 Troika Text
+        const label = new Text();
+        label.text = this.labelVariants[Math.floor(Math.random() * this.labelVariants.length)];
+        label.fontSize = size;
 
-        this.loader.font.load("/font/Inter 28pt_Regular.json", (font) =>
+        if (plane.userData.colorLabel === 'black')
         {
+            label.color = 0x000000;
 
-            this.array.forEach((plane, index) =>
-            {
-                // if (0 === 0) return
-                // if (index % 7 !== 0) return;
-                if (plane.geometry.parameters.width !== this.sizeVariants[2]) return
+        }
+        if (plane.userData.colorLabel === 'orange')
+        {
+            label.color = 0xFF5500;
 
+        }
+        label.anchorX = 'left';        // Вирівнює текст по лівому краю
+        label.anchorY = 'middle';      // Центрує по вертикалі
+        label.position.set(size / 2 + 0.05, 0, 0.01); // трохи правіше від плейна
 
-                const planeColor = plane.material.color
-                const textMaterial = new THREE.MeshBasicMaterial({ color: new THREE.Color(planeColor) });
+        label.sync();
 
-                const planeSize = plane.geometry.parameters.width
-                const labelText = this.labelVariants[Math.floor(Math.random() * this.labelVariants.length)];
-
-                const textGeo = new TextGeometry(labelText, {
-                    font: font,
-                    size: planeSize * 0.85,
-                    height: 0.001,
-                    curveSegments: 4,
-                    bevelEnabled: false
-                });
-
-                const textMesh = new THREE.Mesh(textGeo, textMaterial);
-                plane.userData.textMesh = textMesh;
-                plane.userData.textMaterial = textMaterial
-
-                textGeo.computeBoundingBox();
-                const textWidth = textGeo.boundingBox.max.x - textGeo.boundingBox.min.x;
-                const textHeight = textGeo.boundingBox.max.y - textGeo.boundingBox.min.y;
-
-                textMesh.position.set(
-                    planeSize / 2 + 0.05, // праворуч від центру плейна
-                    -textHeight / 2,      // по центру по вертикалі
-                    0.01                  // трохи над поверхнею плейна
-                );
-
-                const label = new THREE.Group();
-                label.add(textMesh);
-                plane.add(label);
-            });
-        });
+        plane.add(label);
+        plane.userData.label = label;
+        plane.userData.originalText = label.text;
     }
+
+
 
     sizeCameraDistance()
     {
@@ -186,58 +173,149 @@ export default class RandomPlanes
     highlightPlane()
     {
         const tempVec = new THREE.Vector3()
-        const zBorder = 6
+        const zBorder = 9
+
+        const errorMessages = [
+            'Failed to connect',
+            'Decommissioned',
+            'Signal lost',
+            'Collision Alarm'
+        ]
 
         this.array.forEach((plane) =>
         {
             plane.getWorldPosition(tempVec)
             const z = tempVec.z
 
-            const labelMaterial = plane.userData.textMaterial
+            const label = plane.userData.label
 
-            if (plane.userData.colorLabel === 'orange' && z >= zBorder)
+            if (plane.userData.colorLabel === 'orange')
             {
+                if (z >= zBorder)
+                {
+                    plane.material.color = new THREE.Color(0xFF5500)
 
-                plane.material.color = new THREE.Color(0xFF5500)
-                // plane.label.material.color = new THREE.Color(0xFF5500)
-                labelMaterial?.color.set(0xFF5500)
+                    if (label)
+                    {
+                        label.color = 0xFF5500
 
-            } else if (plane.userData.colorLabel === 'orange' && z < zBorder)
-            {
-                plane.material.color = new THREE.Color(0x000000)
-                // plane.label.material.color = new THREE.Color(0x000000)
-                labelMaterial?.color.set(0x000000)
+                        // Якщо ще немає вибраного тексту — обрати і зберегти
+                        if (!plane.userData.errorText)
+                        {
+                            plane.userData.errorText = errorMessages[Math.floor(Math.random() * errorMessages.length)];
+                            this.typeWriter(label, plane.userData.errorText, 10)
+                        }
+
+                        // label.text = plane.userData.errorText
+                        // label.sync()
+                    }
+                }
+                else
+                {
+                    plane.material.color = new THREE.Color(0x000000)
+
+                    if (label)
+                    {
+                        label.color = 0x000000
+
+                        label.text = plane.userData.originalText || ''
+                        label.sync()
+
+                        // ❗очищаємо збережене повідомлення, щоб при наступному зближенні обрати нове
+                        plane.userData.errorText = null
+                    }
+                }
             }
         })
-
-
     }
 
-    highlightText()
+    typeWriter(label, fullText, speed = 50)
     {
-        const tempVec = new THREE.Vector3();
-        const zBorder = 5;
+        let currentIndex = 0
 
-        this.array.forEach((plane) =>
+        const type = () =>
         {
-            plane.getWorldPosition(tempVec);
-            const z = tempVec.z;
-
-            const textMesh = plane.userData.textMesh;
-            if (!textMesh) return;
-
-            if (z < zBorder)
+            if (currentIndex <= fullText.length)
             {
-                textMesh.scale.setScalar(0.0001); // практично невидимий
+                label.text = fullText.slice(0, currentIndex)
+                label.sync()
+                currentIndex++
+                setTimeout(type, speed)
+            }
+        }
+
+        type()
+    }
+
+    reverseTypeWriter(label, speed = 50, onComplete = () => { })
+    {
+        let currentIndex = label.text.length
+
+        const erase = () =>
+        {
+            if (currentIndex >= 0)
+            {
+                label.text = label.text.slice(0, currentIndex)
+                label.sync()
+                currentIndex--
+                setTimeout(erase, speed)
             }
             else
             {
-                textMesh.scale.setScalar(1); // повертаємо нормальний розмір
+                onComplete()
             }
-        });
+        }
+
+        erase()
     }
 
+    checkPlaneLabels()
+    {
+        const tempVec = new THREE.Vector3()
+        const zThreshold = 6
 
+        this.array.forEach((plane) =>
+        {
+            plane.getWorldPosition(tempVec)
+            const z = tempVec.z
+
+            const label = plane.userData.label
+
+            if (z >= zThreshold)
+            {
+                // Якщо тексту немає – створити і набивати текст
+                if (!label)
+                {
+                    this.addText(plane, plane.geometry.parameters.width)
+
+                    const newLabel = plane.userData.label
+                    const originalText = newLabel.text
+                    newLabel.text = '' // Починаємо з порожнього тексту
+                    newLabel.sync()
+
+                    this.typeWriter(newLabel, originalText, 50) // Анімація появи
+
+                }
+            }
+            else
+            {
+                // Якщо текст є – зробити reverse typewriter
+                if (label && !plane.userData.deleting)
+                {
+                    plane.userData.deleting = true // Щоб не дублювати reverse
+
+                    this.reverseTypeWriter(label, 50, () =>
+                    {
+                        // Після завершення reverse — видалити текст
+                        plane.remove(label)
+                        if (label.dispose) label.dispose()
+                        plane.userData.label = null
+                        plane.userData.deleting = false
+                    })
+                }
+            }
+        })
+    }
 
 
     resetPlanes()
@@ -248,15 +326,14 @@ export default class RandomPlanes
             this.instance.remove(plane);
             plane.geometry.dispose();
             plane.material.dispose();
-        });
 
+
+        });
 
         this.array = [];
 
-
-        // Згенерувати нові
         this.generatePlanes(this.PARAMS.count, this.PARAMS.border);
-        this.addLabels();
+
     }
 
     setFunctions()
@@ -299,9 +376,12 @@ export default class RandomPlanes
     update()
     {
         this.sizeCameraDistance()
+        this.checkPlaneLabels()
+
         this.highlightPlane()
-        this.highlightText()
+
 
     }
 
-} 
+}
+
