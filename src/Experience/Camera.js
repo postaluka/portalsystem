@@ -14,7 +14,7 @@ export default class Camera
         this.canvas = this.experience.canvas
 
         this.setInstance()
-        // this.setControl()
+        this.setControl()
 
         this.debug()
 
@@ -43,8 +43,8 @@ export default class Camera
         this.controls.enableDamping = true
         this.controls.maxPolarAngle = Math.PI / 2.1
         this.controls.minPolarAngle = Math.PI / 2
-        this.controls.minAzimuthAngle = -Math.PI / 5
-        this.controls.maxAzimuthAngle = Math.PI / 5
+        this.controls.minAzimuthAngle = -Math.PI / 4
+        this.controls.maxAzimuthAngle = Math.PI / 4
         this.controls.enableZoom = false
         // this.controls.minDistance = 15
         // this.controls.maxDistance = 21
@@ -104,7 +104,7 @@ export default class Camera
 
     update()
     {
-        // this.controls.update()
+        this.controls.update()
         // console.log(
         //     this.instance.position,
         //     this.instance.rotation

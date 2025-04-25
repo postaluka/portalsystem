@@ -11,6 +11,7 @@ const PARAMS = {
     /** SPHERE */
     stroke: 0.02,
     outline: 0.002,
+    widthSegments: 120,
     heightSegments: 28,
     stepWidth: 2,
     longSteps: 12,
