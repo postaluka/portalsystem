@@ -44,6 +44,7 @@ export default class RandomPlanes
         this.zThreshold = 5 // чим менше, тим раніше зʼявляються
 
         this.generatePlanes(this.PARAMS.count, this.PARAMS.border);
+        this.checkLinesForDistance()
 
         this.debug()
 
@@ -316,18 +317,15 @@ export default class RandomPlanes
         {
             plane.getWorldPosition(tempVec)
 
-
             const zGate = tempVec.z
             const label = plane.userData.label
+            let labelText
 
             if (zGate >= this.zThreshold)
             {
                 if (!plane.userData.textExpanded)
                 {
                     plane.userData.textExpanded = true
-
-                    let labelText
-
 
                     // label.scale.setScalar(1)
                     if (plane.userData.colorLabel === 'black')
@@ -348,18 +346,14 @@ export default class RandomPlanes
 
                     if (this.initialized)
                     {
-                        // після першого апдейта: красиво друкуємо
-                        label.text = ''
-                        label.sync()
-                        this.typeWriter(label, labelText, 50)
+                        this.typeWriter(label, labelText, 50); // після запуску друкуємо красиво
                     }
                     else
                     {
-                        // одразу ставимо весь текст без друкування
-                        console.log('check');
+                        console.log('initialized');
 
-                        label.text = labelText
-                        label.sync()
+                        label.text = labelText; // на старті просто одразу весь текст
+                        label.sync();
                     }
 
 
@@ -513,9 +507,10 @@ export default class RandomPlanes
 
         if (!this.initialized)
         {
-            gsap.delayedCall(0.9, () =>
+            gsap.delayedCall(1, () =>
             {
                 this.initialized = true
+                console.log('FIRST INITIALIZED COMPLETE ✅')
             })
         }
 
