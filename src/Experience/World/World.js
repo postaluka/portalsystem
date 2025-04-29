@@ -97,7 +97,7 @@ export default class World
     {
         this.setParallax()
 
-        this.speedOffset = 0.0001
+        this.speedOffset = 0.0001 //0.0001
         this.rotationXSpeed = this.time.delta * this.speedOffset
         this.rotationYSpeed = this.time.delta * this.speedOffset
 

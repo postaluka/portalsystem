@@ -11,6 +11,7 @@ export default class RandomPlanes
 {
     constructor({ radius = 16 })
     {
+        this.initialized = false //перед першим запуском
 
         this.PARAMS = PARAMS
 
@@ -31,8 +32,16 @@ export default class RandomPlanes
         this.sizeVariants = [0.2, 0.24, 0.25];
 
         this.labelVariants = Array.from({ length: 10 }, (_, i) => `1998-${i}0A`);
+        this.errorMessages = [
+            'Failed to connect',
+            'Decommissioned',
+            'Signal lost',
+            'Collision Alarm'
+        ]
 
         this.array = []
+
+        this.zThreshold = 5 // чим менше, тим раніше зʼявляються
 
         this.generatePlanes(this.PARAMS.count, this.PARAMS.border);
 
@@ -77,6 +86,8 @@ export default class RandomPlanes
             plane.rotation.x = Math.PI;
 
             plane.userData.colorLabel = colorLabel
+            plane.userData.linesExpanded = false
+            plane.userData.textExpanded = false
 
             // Верхня півкуля з урізанням
             const topCutoff = this.PARAMS.topCutoff;
@@ -109,8 +120,42 @@ export default class RandomPlanes
             this.array.push(plane);
 
             this.addText(plane, size)
+            this.addLines(plane, size, material)
             created++;
         }
+
+
+    }
+
+    addLines(plane, size, material)
+    {
+
+        const geometryLines = new THREE.PlaneGeometry(size * 0.15, size * 0.7)
+        const linesGroup = new THREE.Group() //лінії по боках
+
+        const offset = 0.1 // отступ ліній між собою
+        const centerOffset = 0.2 // отступ ліній від квадрата
+
+        for (let i = 0; i < 3; i++)
+        {
+            const line = new THREE.Mesh(geometryLines, material)
+            line.position.x = -offset * i - centerOffset
+            linesGroup.add(line)
+
+        }
+        for (let i = 0; i < 3; i++)
+        {
+            const line = new THREE.Mesh(geometryLines, material)
+            line.position.x = offset * i + centerOffset
+            linesGroup.add(line)
+        }
+        plane.add(linesGroup)
+
+        const linesArray = linesGroup.children
+        linesArray.forEach((line) =>
+        {
+            line.scale.y = 0
+        })
     }
 
     addText(plane, size)
@@ -118,22 +163,31 @@ export default class RandomPlanes
 
         // 🔠 Troika Text
         const label = new Text();
-        label.text = this.labelVariants[Math.floor(Math.random() * this.labelVariants.length)];
-        label.fontSize = size;
-
         if (plane.userData.colorLabel === 'black')
         {
-            label.color = 0x000000;
-
+            // label.text = this.labelVariants[Math.floor(Math.random() * this.labelVariants.length)];
+            label.text = ''
         }
         if (plane.userData.colorLabel === 'orange')
         {
-            label.color = 0xFF5500;
-
+            // label.text = this.errorMessages[Math.floor(Math.random() * this.errorMessages.length)]
+            label.text = ''
         }
+        // label.text = ""
+        label.fontSize = size * 1.15;
+        label.color = 0x000000;
+
         label.anchorX = 'left';        // Вирівнює текст по лівому краю
         label.anchorY = 'middle';      // Центрує по вертикалі
-        label.position.set(size / 2 + 0.05, 0, 0.01); // трохи правіше від плейна
+        if (plane.userData.colorLabel === 'black')
+        {
+            label.position.set(size / 2 + 0.45, 0.012, 0); // трохи правіше від плейна
+        }
+        if (plane.userData.colorLabel === 'orange')
+        {
+            label.position.set(size / 2 + 0.15, 0.012, 0); // трохи правіше від плейна
+        }
+        // label.scale.setScalar(0)
 
         label.sync();
 
@@ -144,90 +198,197 @@ export default class RandomPlanes
 
 
 
-    sizeCameraDistance()
+    checkLinesForDistance()
     {
         const tempVec = new THREE.Vector3()
 
         this.array.forEach((plane) =>
         {
             plane.getWorldPosition(tempVec)
-            const z = tempVec.z
 
-            const baseSize = plane.geometry.parameters.width
+            const zGate = tempVec.z
+            const linesGroup = plane.children.find(child => child.isGroup) // знаходимо групу ліній
+            if (!linesGroup) return
 
-            // Нормалізуємо в діапазоні 15 (близько) до -15 (далеко)
-            const t = THREE.MathUtils.clamp((15 - z) / 30, 0, 1)
+            const linesArray = linesGroup.children
+
+            const dutation = 0.6
+            const delay = 0.2
+            const ease = "expo.inOut"
+
+            // lines appear
+            if (zGate >= this.zThreshold)
+            {
+                if (!plane.userData.linesExpanded && plane.userData.colorLabel === 'black')
+                {
+                    plane.userData.linesExpanded = true
+
+                    for (let i = 0; i < linesArray.length / 2; i++)
+                    {
+                        const lineA = linesArray[i]
+                        const lineB = linesArray[i + 3]
+
+                        gsap.fromTo(
+                            lineA.scale,
+                            { y: 0 },
+                            {
+                                y: 1,
+                                duration: dutation,
+                                ease: ease,
+                                delay: i * delay,
+                                onComplete: () =>
+                                {
+                                    this.checkTextForDistance()
+                                }
+                            }
+                        )
+
+                        gsap.fromTo(
+                            lineB.scale,
+                            { y: 0 },
+                            {
+                                y: 1,
+                                duration: dutation,
+                                ease: ease,
+                                delay: i * delay,
+                            }
+                        )
+                    }
+                }
+            }
+
+            //lines dispose 
+
+            if (zGate < this.zThreshold)
+            {
+                if (plane.userData.linesExpanded && plane.userData.colorLabel === 'black')
+                {
+                    plane.userData.linesExpanded = false
+
+                    for (let i = 2; i >= 0; i--)
+                    {
+                        const lineA = linesArray[i]
+                        const lineB = linesArray[i + 3]
+
+                        gsap.fromTo(
+                            lineA.scale,
+                            { y: 1 },
+                            {
+                                y: 0,
+                                duration: dutation,
+                                ease: ease,
+                                delay: (2 - i) * delay,
+                                onComplete: () =>
+                                {
+                                    this.checkTextForDistance()
+                                }
+                            }
+                        )
+
+                        gsap.fromTo(
+                            lineB.scale,
+                            { y: 1 },
+                            {
+                                y: 0,
+                                duration: dutation,
+                                ease: ease,
+                                delay: (2 - i) * delay,
+                            }
+                        )
+                    }
+                }
+            }
 
 
-            // Обчислюємо новий розмір
-            const newSize = THREE.MathUtils.lerp(baseSize * 1.4, 0.001, t)
 
-            // Масштабуємо плейн
-            const scale = newSize / baseSize * this.PARAMS.maxSize
-            plane.scale.setScalar(scale)
 
         })
+
     }
 
 
-    highlightPlane()
+
+    checkTextForDistance()
     {
         const tempVec = new THREE.Vector3()
-        const zBorder = 9
-
-        const errorMessages = [
-            'Failed to connect',
-            'Decommissioned',
-            'Signal lost',
-            'Collision Alarm'
-        ]
 
         this.array.forEach((plane) =>
         {
             plane.getWorldPosition(tempVec)
-            const z = tempVec.z
 
+
+            const zGate = tempVec.z
             const label = plane.userData.label
 
-            if (plane.userData.colorLabel === 'orange')
+            if (zGate >= this.zThreshold)
             {
-                if (z >= zBorder)
+                if (!plane.userData.textExpanded)
                 {
-                    plane.material.color = new THREE.Color(0xFF5500)
+                    plane.userData.textExpanded = true
 
-                    if (label)
+                    let labelText
+
+
+                    // label.scale.setScalar(1)
+                    if (plane.userData.colorLabel === 'black')
                     {
+                        labelText = this.labelVariants[Math.floor(Math.random() * this.labelVariants.length)];
+                    }
+                    if (plane.userData.colorLabel === 'orange')
+                    {
+                        plane.material.color = new THREE.Color(0xFF5500)
                         label.color = 0xFF5500
 
-                        // Якщо ще немає вибраного тексту — обрати і зберегти
-                        if (!plane.userData.errorText)
-                        {
-                            plane.userData.errorText = errorMessages[Math.floor(Math.random() * errorMessages.length)];
-                            this.typeWriter(label, plane.userData.errorText, 10)
-                        }
+                        labelText = this.errorMessages[Math.floor(Math.random() * this.errorMessages.length)]
 
-                        // label.text = plane.userData.errorText
-                        // label.sync()
+                        this.blinkOrangePlane(plane)
+
+
                     }
-                }
-                else
-                {
-                    plane.material.color = new THREE.Color(0x000000)
 
-                    if (label)
+                    if (this.initialized)
                     {
-                        label.color = 0x000000
-
-                        label.text = plane.userData.originalText || ''
+                        // після першого апдейта: красиво друкуємо
+                        label.text = ''
                         label.sync()
-
-                        // ❗очищаємо збережене повідомлення, щоб при наступному зближенні обрати нове
-                        plane.userData.errorText = null
+                        this.typeWriter(label, labelText, 50)
                     }
+                    else
+                    {
+                        // одразу ставимо весь текст без друкування
+                        console.log('check');
+
+                        label.text = labelText
+                        label.sync()
+                    }
+
+
+
+                }
+            }
+            if (zGate < this.zThreshold)
+            {
+                if (plane.userData.textExpanded)
+                {
+                    plane.userData.textExpanded = false
+
+                    // label.scale.setScalar(0)
+
+
+
+                    this.reverseTypeWriter(label, 10, () =>
+                    {
+
+                        plane.material.color = new THREE.Color(0x000000)
+                        this.stopBlinkingPlane(plane); // Стопаємо мігання
+
+                    })
+
                 }
             }
         })
     }
+
 
     typeWriter(label, fullText, speed = 50)
     {
@@ -269,54 +430,30 @@ export default class RandomPlanes
         erase()
     }
 
-    checkPlaneLabels()
+    sizeCameraDistance()
     {
         const tempVec = new THREE.Vector3()
-        const zThreshold = 6
 
         this.array.forEach((plane) =>
         {
             plane.getWorldPosition(tempVec)
             const z = tempVec.z
 
-            const label = plane.userData.label
+            const baseSize = plane.geometry.parameters.width
 
-            if (z >= zThreshold)
-            {
-                // Якщо тексту немає – створити і набивати текст
-                if (!label)
-                {
-                    this.addText(plane, plane.geometry.parameters.width)
+            // Нормалізуємо в діапазоні 15 (близько) до -15 (далеко)
+            const t = THREE.MathUtils.clamp((15 - z) / 30, 0, 1)
 
-                    const newLabel = plane.userData.label
-                    const originalText = newLabel.text
-                    newLabel.text = '' // Починаємо з порожнього тексту
-                    newLabel.sync()
 
-                    this.typeWriter(newLabel, originalText, 50) // Анімація появи
+            // Обчислюємо новий розмір
+            const newSize = THREE.MathUtils.lerp(baseSize * 1.4, 0.001, t)
 
-                }
-            }
-            else
-            {
-                // Якщо текст є – зробити reverse typewriter
-                if (label && !plane.userData.deleting)
-                {
-                    plane.userData.deleting = true // Щоб не дублювати reverse
+            // Масштабуємо плейн
+            const scale = newSize / baseSize * this.PARAMS.maxSize
+            plane.scale.setScalar(scale)
 
-                    this.reverseTypeWriter(label, 50, () =>
-                    {
-                        // Після завершення reverse — видалити текст
-                        plane.remove(label)
-                        if (label.dispose) label.dispose()
-                        plane.userData.label = null
-                        plane.userData.deleting = false
-                    })
-                }
-            }
         })
     }
-
 
     resetPlanes()
     {
@@ -333,6 +470,56 @@ export default class RandomPlanes
         this.array = [];
 
         this.generatePlanes(this.PARAMS.count, this.PARAMS.border);
+
+    }
+
+    blinkOrangePlane(plane)
+    {
+        // Якщо вже є мігання — зупиняємо його перед новим
+        if (plane.userData.blinkTween)
+        {
+            plane.userData.blinkTween.kill();
+        }
+
+        // Створюємо нову анімацію
+        const tween = gsap.to(plane.material, {
+            opacity: 0,
+            duration: (Math.random() + 0.3) * 0.7,
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut"
+        });
+
+        plane.userData.blinkTween = tween;
+    }
+
+    stopBlinkingPlane(plane)
+    {
+        if (plane.userData.blinkTween)
+        {
+            plane.userData.blinkTween.kill();
+            plane.userData.blinkTween = null;
+        }
+        plane.material.opacity = 1; // повертаємо нормальну прозорість
+    }
+
+
+    update()
+    {
+        this.sizeCameraDistance()
+
+        //поява ліній і тексту
+        this.checkLinesForDistance()
+
+        if (!this.initialized)
+        {
+            gsap.delayedCall(0.9, () =>
+            {
+                this.initialized = true
+            })
+        }
+
+
 
     }
 
@@ -373,15 +560,7 @@ export default class RandomPlanes
         }
     }
 
-    update()
-    {
-        this.sizeCameraDistance()
-        this.checkPlaneLabels()
 
-        this.highlightPlane()
-
-
-    }
 
 }
 
