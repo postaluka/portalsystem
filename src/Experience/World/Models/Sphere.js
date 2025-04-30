@@ -33,6 +33,7 @@ export default class Sphere
         this.radius = 14
 
         this.geometry = new THREE.SphereGeometry(this.radius, this.PARAMS.widthSegments, this.PARAMS.heightSegments)
+        this.geometryOutline = new THREE.SphereGeometry(this.radius, 100, 100)
         this.instance = new THREE.Group()
 
 
@@ -60,7 +61,7 @@ export default class Sphere
 
         this.edgeLines = this.lines.draw({
             geometry: this.geometry,
-            color: 0xFF5500,
+            color: 0x3E78FF,
             thickness: this.PARAMS.stroke,
             stepWidth: this.PARAMS.stepWidth,
             longSteps: this.PARAMS.longSteps
@@ -68,6 +69,17 @@ export default class Sphere
 
         this.instance.add(this.edgeLines)
         this.instance.rotation.x = 0.33
+
+        this.outlineLine = this.lines.drawOutlineCircle({
+            radius: this.radius * 1.001, // трохи більший, щоб був "поверх"
+            thickness: this.PARAMS.stroke * 1.2,
+            color: 0x3E78FF
+        })
+        this.outlineLine.rotation.x = -0.1
+        // this.instance.add(outlineLine)
+
+
+
     }
 
     addFill()
@@ -79,7 +91,7 @@ export default class Sphere
     addOutline()
     {
         this.outlineThickness = this.PARAMS.outline
-        this.outline = this.lines.addOutline(this.geometry, new THREE.Color(0xFF5500), this.outlineThickness)
+        this.outline = this.lines.addOutline(this.geometryOutline, new THREE.Color(0x3E78FF), this.outlineThickness)
         this.instance.add(this.outline)
     }
 
@@ -113,7 +125,7 @@ export default class Sphere
                 this.addEdgeStroke()
             })
 
-            this.debug.sphereFolder.add(this.PARAMS, 'outline').min(0.001).max(0.1).step(0.0001).onChange((value) =>
+            this.debug.sphereFolder.add(this.PARAMS, 'outline').min(0).max(0.1).step(0.0001).onChange((value) =>
             {
                 this.instance.remove(this.outline)
                 this.outline.geometry.dispose()

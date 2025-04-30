@@ -41,12 +41,13 @@ export default class World
         this.randomPlanes = new RandomPlanes(this.sphere.radius)
 
         this.rotationGroup = new THREE.Group()
-        this.scene.add(this.rotationGroup)
+        this.scene.add(this.rotationGroup, this.sphere.instance, this.sphere.outlineLine)
+
 
 
         // Add models
         this.rotationGroup.add(
-            this.sphere.instance,
+
             this.randomPlanes.instance
         )
 
@@ -75,7 +76,7 @@ export default class World
 
     setParallax()
     {
-        const rotationTarget = this.cursor.y * 0.05
+        const rotationTarget = this.cursor.y * 0.025
         const positionTarget = this.cursor.x * 0.5
 
 
@@ -84,11 +85,11 @@ export default class World
             duration: 4,
             ease: "back.out(4)",
         })
-        // gsap.to(this.rotationGroup.position, {
-        //     x: positionTarget,
-        //     duration: 4,
-        //     ease: "back.out(4)",
-        // })
+        gsap.to(this.rotationGroup.position, {
+            x: positionTarget,
+            duration: 4,
+            ease: "back.out(4)",
+        })
 
 
     }
@@ -106,9 +107,12 @@ export default class World
         this.randomPlanes.instance.rotation.y += this.rotationXSpeed
         this.randomPlanes.array.forEach((plane) =>
         {
-            const worldPosition = new THREE.Vector3(0, 0, 100)
-            // this.experience.camera.instance.getWorldPosition(worldPosition)
+            const worldPosition = new THREE.Vector3(0, 19, 10000)
+
             plane.lookAt(worldPosition)
+
+            // plane.lookAt(this.experience.camera.instance.position);
+
         })
 
 

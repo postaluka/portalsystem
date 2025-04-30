@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'
 import gsap from "gsap";
 import { Text } from 'troika-three-text'
+import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 
 import Experience from "../../Experience";
 import PARAMS from "../../Utils/PARAMS";
@@ -15,8 +15,6 @@ export default class RandomPlanes
 
         this.PARAMS = PARAMS
 
-
-
         this.experience = new Experience()
         this.camera = this.experience.camera.instance
         this.loader = this.experience.loaders
@@ -29,7 +27,7 @@ export default class RandomPlanes
         this.instance.rotation.x = 0.33
 
         // Доступні розміри
-        this.sizeVariants = [0.2, 0.24, 0.25];
+        this.sizeVariants = [0.18, 0.2, 0.22];
 
         this.labelVariants = Array.from({ length: 10 }, (_, i) => `1998-${i}0A`);
         this.errorMessages = [
@@ -44,6 +42,7 @@ export default class RandomPlanes
         this.zThreshold = 5 // чим менше, тим раніше зʼявляються
 
         this.generatePlanes(this.PARAMS.count, this.PARAMS.border);
+        this.checkLinesForDistance()
 
         this.debug()
 
@@ -54,6 +53,8 @@ export default class RandomPlanes
         const maxDistance = this.radius + border;
         const minDistanceBetween = 1;
         const maxAttempts = count * 10; // Щоб уникнути нескінченного циклу
+        let blackPlaneCounter = 0; //рахувати чорні плейни
+
 
         this.array = []
 
@@ -69,7 +70,11 @@ export default class RandomPlanes
             const colorLabelArray = [
                 'orange',
                 'black',
-                'orange',
+                'black',
+                'black',
+                'black',
+                'black',
+                'black',
                 'black',
                 'black',
             ];
@@ -84,10 +89,57 @@ export default class RandomPlanes
 
             const plane = new THREE.Mesh(geometry, material);
             plane.rotation.x = Math.PI;
+            let planeCross
 
             plane.userData.colorLabel = colorLabel
             plane.userData.linesExpanded = false
             plane.userData.textExpanded = false
+            plane.userData.size = size
+
+            //додаєм номер чорним плейнам
+            if (colorLabel === 'black')
+            {
+                blackPlaneCounter++;
+                plane.userData.blackIndex = blackPlaneCounter;
+            }
+
+            if (plane.userData.colorLabel === 'orange')
+            {
+                plane.geometry = new THREE.PlaneGeometry(0.01, 0.01)
+
+                const top = new THREE.PlaneGeometry(size, size * 0.1)
+                const bottom = new THREE.PlaneGeometry(size, size * 0.1)
+                const left = new THREE.PlaneGeometry(size * 0.1, size)
+                const right = new THREE.PlaneGeometry(size * 0.1, size)
+
+                const cross01 = new THREE.PlaneGeometry(size * 1.3, size * 0.1)
+                const cross02 = new THREE.PlaneGeometry(size * 1.3, size * 0.1)
+
+                top.translate(0, size / 2, 0)
+                bottom.translate(0, -size / 2, 0)
+                left.translate(size / 2, 0, 0)
+                right.translate(-size / 2, 0, 0)
+
+                cross01.rotateZ(Math.PI / 4)
+                cross02.rotateZ(- Math.PI / 4)
+
+                const mergeGeometry = BufferGeometryUtils.mergeGeometries([
+                    top,
+                    bottom,
+                    left,
+                    right,
+                    cross01,
+                    cross02
+                ])
+
+                planeCross = new THREE.Mesh(
+                    mergeGeometry,
+                    material
+                )
+
+                plane.add(planeCross)
+
+            }
 
             // Верхня півкуля з урізанням
             const topCutoff = this.PARAMS.topCutoff;
@@ -121,6 +173,21 @@ export default class RandomPlanes
 
             this.addText(plane, size)
             this.addLines(plane, size, material)
+            if (plane.userData.colorLabel === 'orange')
+            {
+                const materialGlitch = new THREE.MeshBasicMaterial({
+                    color: 0xFFD84D,
+                    transparent: true,
+                })
+                const glitch01 = new THREE.Mesh(
+                    new THREE.PlaneGeometry(size * 18, size * 1.2),
+                    materialGlitch
+                )
+                glitch01.position.set(size * 5, 0, -0.1)
+                glitch01.scale.setScalar(0)
+
+                planeCross.add(glitch01)
+            }
             created++;
         }
 
@@ -130,20 +197,20 @@ export default class RandomPlanes
     addLines(plane, size, material)
     {
 
-        const geometryLines = new THREE.PlaneGeometry(size * 0.15, size * 0.7)
+        const geometryLines = new THREE.PlaneGeometry(size * 0.1, size * 0.6)
         const linesGroup = new THREE.Group() //лінії по боках
 
-        const offset = 0.1 // отступ ліній між собою
-        const centerOffset = 0.2 // отступ ліній від квадрата
+        const offset = size * 0.3 // отступ ліній між собою
+        const centerOffset = size * 0.8 // отступ ліній від квадрата
 
-        for (let i = 0; i < 3; i++)
+        for (let i = 0; i < 4; i++)
         {
             const line = new THREE.Mesh(geometryLines, material)
             line.position.x = -offset * i - centerOffset
             linesGroup.add(line)
 
         }
-        for (let i = 0; i < 3; i++)
+        for (let i = 0; i < 4; i++)
         {
             const line = new THREE.Mesh(geometryLines, material)
             line.position.x = offset * i + centerOffset
@@ -185,11 +252,12 @@ export default class RandomPlanes
         }
         if (plane.userData.colorLabel === 'orange')
         {
-            label.position.set(size / 2 + 0.15, 0.012, 0); // трохи правіше від плейна
+            label.position.set(size / 2 + 0.45, 0.012, 0); // трохи правіше від плейна
         }
         // label.scale.setScalar(0)
 
         label.sync();
+
 
         plane.add(label);
         plane.userData.label = label;
@@ -212,21 +280,27 @@ export default class RandomPlanes
 
             const linesArray = linesGroup.children
 
-            const dutation = 0.6
-            const delay = 0.2
+            const dutation = 0.1
+            const delay = 0.1
             const ease = "expo.inOut"
 
             // lines appear
             if (zGate >= this.zThreshold)
             {
-                if (!plane.userData.linesExpanded && plane.userData.colorLabel === 'black')
+                if (!plane.userData.linesExpanded)
                 {
+                    // тільки для чорних — рахуємо черговість
+                    if (plane.userData.colorLabel === 'black')
+                    {
+                        const index = plane.userData.blackIndex || 0;
+                        if (index % 2 !== 0) return; // показуємо тільки кожен 3-й
+                    }
                     plane.userData.linesExpanded = true
 
                     for (let i = 0; i < linesArray.length / 2; i++)
                     {
                         const lineA = linesArray[i]
-                        const lineB = linesArray[i + 3]
+                        const lineB = linesArray[i + 4]
 
                         gsap.fromTo(
                             lineA.scale,
@@ -261,14 +335,14 @@ export default class RandomPlanes
 
             if (zGate < this.zThreshold)
             {
-                if (plane.userData.linesExpanded && plane.userData.colorLabel === 'black')
+                if (plane.userData.linesExpanded)
                 {
                     plane.userData.linesExpanded = false
 
-                    for (let i = 2; i >= 0; i--)
+                    for (let i = 0; i < linesArray.length / 2; i++)
                     {
                         const lineA = linesArray[i]
-                        const lineB = linesArray[i + 3]
+                        const lineB = linesArray[i + 4]
 
                         gsap.fromTo(
                             lineA.scale,
@@ -312,10 +386,10 @@ export default class RandomPlanes
     {
         const tempVec = new THREE.Vector3()
 
-        this.array.forEach((plane) =>
+
+        this.array.forEach((plane, index) =>
         {
             plane.getWorldPosition(tempVec)
-
 
             const zGate = tempVec.z
             const label = plane.userData.label
@@ -325,6 +399,13 @@ export default class RandomPlanes
             {
                 if (!plane.userData.textExpanded)
                 {
+                    // тільки для чорних — рахуємо черговість
+                    if (plane.userData.colorLabel === 'black')
+                    {
+                        const index = plane.userData.blackIndex || 0;
+                        if (index % 2 !== 0) return; // показуємо тільки кожен 3-й
+                    }
+
                     plane.userData.textExpanded = true
 
                     // label.scale.setScalar(1)
@@ -334,12 +415,17 @@ export default class RandomPlanes
                     }
                     if (plane.userData.colorLabel === 'orange')
                     {
-                        plane.material.color = new THREE.Color(0xFF5500)
-                        label.color = 0xFF5500
+
+
+                        const glitchPlane = plane.children[0].children[0]
+                        glitchPlane.scale.setScalar(1)
+
+                        this.blinkOrangePlane(glitchPlane)
+
 
                         labelText = this.errorMessages[Math.floor(Math.random() * this.errorMessages.length)]
-
-                        this.blinkOrangePlane(plane)
+                        plane.geometry = new THREE.PlaneGeometry(0.001, 0.001)
+                        plane.children
 
 
                     }
@@ -366,16 +452,16 @@ export default class RandomPlanes
                 {
                     plane.userData.textExpanded = false
 
-                    // label.scale.setScalar(0)
-
-
-
                     this.reverseTypeWriter(label, 10, () =>
                     {
+                        if (plane.userData.colorLabel === 'orange')
+                        {
 
-                        plane.material.color = new THREE.Color(0x000000)
-                        this.stopBlinkingPlane(plane); // Стопаємо мігання
-
+                            plane.geometry = new THREE.PlaneGeometry(plane.userData.size, plane.userData.size)
+                            const glitchPlane = plane.children[0].children[0]
+                            glitchPlane.scale.setScalar(0)
+                            this.stopBlinkingPlane(glitchPlane)
+                        }
                     })
 
                 }
@@ -436,15 +522,27 @@ export default class RandomPlanes
             const baseSize = plane.geometry.parameters.width
 
             // Нормалізуємо в діапазоні 15 (близько) до -15 (далеко)
-            const t = THREE.MathUtils.clamp((15 - z) / 30, 0, 1)
+            const t = THREE.MathUtils.clamp((12 - z) / 30, 0, 1) // (15 - z)
 
 
             // Обчислюємо новий розмір
             const newSize = THREE.MathUtils.lerp(baseSize * 1.4, 0.001, t)
+            const newSizeText = THREE.MathUtils.lerp(baseSize * 1.4, baseSize, t)
 
             // Масштабуємо плейн
             const scale = newSize / baseSize * this.PARAMS.maxSize
+            const scaleText = newSizeText / baseSize * this.PARAMS.maxSize
             plane.scale.setScalar(scale)
+
+            const label = plane.userData.label;
+            if (label)
+            {
+                label.fontSize = scaleText * 0.34; // або scale * baseFontSize
+                label.sync();
+            }
+
+
+
 
         })
     }
@@ -467,16 +565,17 @@ export default class RandomPlanes
 
     }
 
-    blinkOrangePlane(plane)
+    blinkOrangePlane(glitchPlane)
     {
         // Якщо вже є мігання — зупиняємо його перед новим
-        if (plane.userData.blinkTween)
+        if (glitchPlane.userData.blinkTween)
         {
-            plane.userData.blinkTween.kill();
+            glitchPlane.userData.blinkTween.kill();
         }
 
         // Створюємо нову анімацію
-        const tween = gsap.to(plane.material, {
+
+        const tween = gsap.to(glitchPlane.material, {
             opacity: 0,
             duration: (Math.random() + 0.3) * 0.7,
             repeat: -1,
@@ -484,17 +583,17 @@ export default class RandomPlanes
             ease: "sine.inOut"
         });
 
-        plane.userData.blinkTween = tween;
+        glitchPlane.userData.blinkTween = tween;
     }
 
-    stopBlinkingPlane(plane)
+    stopBlinkingPlane(glitchPlane)
     {
-        if (plane.userData.blinkTween)
+        if (glitchPlane.userData.blinkTween)
         {
-            plane.userData.blinkTween.kill();
-            plane.userData.blinkTween = null;
+            glitchPlane.userData.blinkTween.kill();
+            glitchPlane.userData.blinkTween = null;
         }
-        plane.material.opacity = 1; // повертаємо нормальну прозорість
+        glitchPlane.material.opacity = 1; // повертаємо нормальну прозорість
     }
 
 
@@ -507,7 +606,7 @@ export default class RandomPlanes
 
         if (!this.initialized)
         {
-            gsap.delayedCall(0.1, () =>
+            gsap.delayedCall(1, () =>
             {
                 this.initialized = true
                 console.log('FIRST INITIALIZED COMPLETE ✅')
@@ -558,4 +657,3 @@ export default class RandomPlanes
 
 
 }
-

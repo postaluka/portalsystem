@@ -15,11 +15,12 @@ export default class Lines
 
     draw({
         geometry,
-        color = 0x00ff00,
+        color = 0x3E78FF,
         thickness = 0.2,
         resolution = new THREE.Vector2(window.innerWidth, window.innerHeight),
         stepWidth = 2,
-        longSteps = 12
+        longSteps = 12,
+
     })
     {
         // 1. Створюємо EdgesGeometry з твоєї геометрії
@@ -38,8 +39,6 @@ export default class Lines
             radius: 14, // або твій this.side
             longSteps: longSteps // кількість меридіанів
         })
-
-
 
         // this.lineSegmentsGeometry.setPositions(this.edgePositions)
         this.lineSegmentsGeometry.setPositions(this.filteredPositions)
@@ -189,7 +188,7 @@ export default class Lines
     addBottomParallel({
         radius = 1,
         longSteps = 32,
-        phi = Math.PI * 0.98 // дуже близько до низу
+        phi = Math.PI * 0.2 // дуже близько до низу
     })
     {
         const positions = []
@@ -235,15 +234,71 @@ export default class Lines
             depthWrite: false
         })
 
-        const outlineMesh = new THREE.Mesh(geometry, outlineMaterial)
-        const scaleFactor = 1 + thickness
+
+
+        const outlineMesh = new THREE.Mesh(geometry.clone(), outlineMaterial)
+        const scaleFactor = (1 + thickness) * 0
         outlineMesh.scale.setScalar(scaleFactor)
-        outlineMesh.renderOrder = 1
+        outlineMesh.renderOrder = 0
 
         return outlineMesh
 
 
     }
+
+    drawOutlineCircle({
+        radius = 14,
+        thickness = 0.01,
+        resolution = new THREE.Vector2(window.innerWidth, window.innerHeight),
+        color = 0x000000,
+    })
+    {
+        const latSteps = 512
+        const longSteps = 1
+        const positions = []
+
+        const theta = 0 // вертикальний меридіан (можеш змінити)
+
+        for (let j = 0; j < latSteps; j++)
+        {
+            const phi1 = (j / latSteps) * Math.PI * 2
+            const phi2 = ((j + 1) / latSteps) * Math.PI * 2
+
+            const a = new THREE.Vector3(
+                radius * Math.sin(phi1) * Math.cos(theta),
+                radius * Math.cos(phi1),
+                radius * Math.sin(phi1) * Math.sin(theta)
+            )
+
+            const b = new THREE.Vector3(
+                radius * Math.sin(phi2) * Math.cos(theta),
+                radius * Math.cos(phi2),
+                radius * Math.sin(phi2) * Math.sin(theta)
+            )
+
+            positions.push(a.x, a.y, a.z, b.x, b.y, b.z)
+        }
+
+        const geometry = new LineSegmentsGeometry()
+        geometry.setPositions(positions)
+
+        const material = new LineMaterial({
+            color,
+            linewidth: thickness,
+            worldUnits: true,
+            transparent: true,
+            depthTest: true,
+            depthWrite: false,
+            toneMapped: false
+        })
+        material.resolution.copy(resolution)
+
+        const line = new LineSegments2(geometry, material)
+        line.renderOrder = -1
+
+        return line
+    }
+
 
 
 
