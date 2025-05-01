@@ -24,7 +24,7 @@ export default class Renderer
             alpha: true,
         })
         this.instance.setSize(this.sizes.width, this.sizes.height)
-        this.instance.setPixelRatio(Math.min(this.sizes.pixelRation, 2)) //треба 2, 0.5 для оптимізації 
+        this.instance.setPixelRatio(Math.min(this.sizes.pixelRation, 1)) //треба 2, 0.5 для оптимізації 
 
         this.instance.shadowMap.enabled = true
 
@@ -33,7 +33,7 @@ export default class Renderer
     resize()
     {
         this.instance.setSize(this.sizes.width, this.sizes.height)
-        this.instance.setPixelRatio(Math.min(this.sizes.pixelRation, 2)) //треба 2, 0.5 для оптимізації 
+        this.instance.setPixelRatio(Math.min(this.sizes.pixelRation, 1)) //треба 2, 0.5 для оптимізації 
     }
 
     update()

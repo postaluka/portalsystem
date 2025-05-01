@@ -3,6 +3,7 @@ import gsap from "gsap";
 import { Text } from 'troika-three-text'
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 
+
 import Experience from "../../Experience";
 import PARAMS from "../../Utils/PARAMS";
 
@@ -70,12 +71,16 @@ export default class RandomPlanes
         {
             gsap.to(plane.userData, {
                 revealScale: 1,
-                duration: 0.5,
-                ease: "back.out(1.1)",
-                delay: index * 0.01,
+                duration: 0.35,
+                ease: "sin.in",
+                delay: index * 0.01, //index * 0.01
                 onUpdate: () =>
                 {
                     plane.scale.setScalar(plane.userData.baseScale * plane.userData.revealScale);
+                },
+                onComplete: () =>
+                {
+
                 }
             });
         });
@@ -115,6 +120,7 @@ export default class RandomPlanes
             ];
             const colorLabel = colorLabelArray[Math.floor(Math.random() * colorLabelArray.length)];
             const geometry = new THREE.PlaneGeometry(size, size);
+
             const material = new THREE.MeshBasicMaterial({
                 color: new THREE.Color(0x000000),
                 side: THREE.DoubleSide,
@@ -138,33 +144,37 @@ export default class RandomPlanes
             {
                 blackPlaneCounter++;
                 plane.userData.blackIndex = blackPlaneCounter;
+
+                plane.geometry = new THREE.PlaneGeometry(0.01, 0.01)
+
+                const edges = new THREE.EdgesGeometry(geometry);
+                const lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
+                const planeEmpty = new THREE.LineSegments(edges, lineMaterial);
+
+                const fill = new THREE.Mesh(
+                    new THREE.PlaneGeometry(size, size),
+                    material
+                )
+                fill.name = 'fill'
+                fill.scale.setScalar(0)
+
+
+
+
+                plane.add(planeEmpty, fill)
             }
 
             if (plane.userData.colorLabel === 'orange')
             {
                 plane.geometry = new THREE.PlaneGeometry(0.01, 0.01)
 
-                const top = new THREE.PlaneGeometry(size, size * 0.1)
-                const bottom = new THREE.PlaneGeometry(size, size * 0.1)
-                const left = new THREE.PlaneGeometry(size * 0.1, size)
-                const right = new THREE.PlaneGeometry(size * 0.1, size)
-
                 const cross01 = new THREE.PlaneGeometry(size * 1.3, size * 0.1)
                 const cross02 = new THREE.PlaneGeometry(size * 1.3, size * 0.1)
-
-                top.translate(0, size / 2, 0)
-                bottom.translate(0, -size / 2, 0)
-                left.translate(size / 2, 0, 0)
-                right.translate(-size / 2, 0, 0)
 
                 cross01.rotateZ(Math.PI / 4)
                 cross02.rotateZ(- Math.PI / 4)
 
                 const mergeGeometry = BufferGeometryUtils.mergeGeometries([
-                    top,
-                    bottom,
-                    left,
-                    right,
                     cross01,
                     cross02
                 ])
@@ -173,8 +183,13 @@ export default class RandomPlanes
                     mergeGeometry,
                     material
                 )
+                planeCross.scale.setScalar(0)
 
-                plane.add(planeCross)
+                const edges = new THREE.EdgesGeometry(geometry);
+                const lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
+                const planeEmpty = new THREE.LineSegments(edges, lineMaterial);
+
+                plane.add(planeCross, planeEmpty)
 
             }
 
@@ -222,8 +237,9 @@ export default class RandomPlanes
                 )
                 glitch01.position.set(size * 5, 0, -0.1)
                 glitch01.scale.setScalar(0)
+                glitch01.name = 'glitch01'
 
-                planeCross.add(glitch01)
+                plane.add(glitch01)
             }
             created++;
         }
@@ -410,9 +426,6 @@ export default class RandomPlanes
                 }
             }
 
-
-
-
         })
 
     }
@@ -449,12 +462,15 @@ export default class RandomPlanes
                     if (plane.userData.colorLabel === 'black')
                     {
                         labelText = this.labelVariants[Math.floor(Math.random() * this.labelVariants.length)];
+
+                        plane.children[1].scale.setScalar(1)
+
+
                     }
                     if (plane.userData.colorLabel === 'orange')
                     {
 
-
-                        const glitchPlane = plane.children[0].children[0]
+                        const glitchPlane = plane.children[4]
                         glitchPlane.scale.setScalar(1)
 
                         this.blinkOrangePlane(glitchPlane)
@@ -462,13 +478,17 @@ export default class RandomPlanes
 
                         labelText = this.errorMessages[Math.floor(Math.random() * this.errorMessages.length)]
                         plane.geometry = new THREE.PlaneGeometry(0.001, 0.001)
-                        plane.children
+
+                        //прибираємо cross
+                        plane.children[0].scale.setScalar(1)
+
 
 
                     }
 
                     if (this.initialized)
                     {
+
                         this.typeWriter(label, labelText, 50); // після запуску друкуємо красиво
                     }
                     else
@@ -493,10 +513,20 @@ export default class RandomPlanes
                         if (plane.userData.colorLabel === 'orange')
                         {
 
-                            plane.geometry = new THREE.PlaneGeometry(plane.userData.size, plane.userData.size)
-                            const glitchPlane = plane.children[0].children[0]
+                            // plane.geometry = new THREE.PlaneGeometry(plane.userData.size, plane.userData.size)
+                            const glitchPlane = plane.children[4]
                             glitchPlane.scale.setScalar(0)
                             this.stopBlinkingPlane(glitchPlane)
+
+                            //прибираємо cross
+                            plane.children[0].scale.setScalar(0)
+
+                        }
+
+                        if (plane.userData.colorLabel === 'black')
+                        {
+
+                            plane.children[1].scale.setScalar(0)
                         }
                     })
 
