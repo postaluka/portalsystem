@@ -68,7 +68,7 @@ export default class Sphere
         })
 
         this.instance.add(this.edgeLines)
-        this.instance.rotation.x = 0.33
+        this.instance.rotation.x = 0 //0.33
 
         this.outlineLine = this.lines.drawOutlineCircle({
             radius: this.radius * 1.001, // трохи більший, щоб був "поверх"

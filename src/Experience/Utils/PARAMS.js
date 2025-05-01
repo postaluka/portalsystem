@@ -1,13 +1,17 @@
 
 
 const PARAMS = {
+    /** initHome*/
+    scrollRotationMultiplier: 0,
+    angularVelocity: 0,
     /** WORLD */
     rotationScene: 0,
+    reveal: false,
     /** RANDOM PLANES */
     maxSize: 0.5,
-    count: 230, //230
+    count: 350, //230
     topCutoff: 0.15,
-    border: 4, //5
+    border: 6, //5
     /** SPHERE */
     stroke: 0.02,
     outline: 0.002, //0.002

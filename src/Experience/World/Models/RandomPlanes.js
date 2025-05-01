@@ -7,6 +7,7 @@ import Experience from "../../Experience";
 import PARAMS from "../../Utils/PARAMS";
 
 
+
 export default class RandomPlanes
 {
     constructor({ radius = 16 })
@@ -24,7 +25,7 @@ export default class RandomPlanes
         this.border = this.PARAMS.border
         this.instance = new THREE.Group();
 
-        this.instance.rotation.x = 0.33
+        this.instance.rotation.x = 0 //0.33
 
         // Доступні розміри
         this.sizeVariants = [0.18, 0.2, 0.22];
@@ -38,14 +39,46 @@ export default class RandomPlanes
         ]
 
         this.array = []
+        this.hiddenPlanes = []
 
         this.zThreshold = 5 // чим менше, тим раніше зʼявляються
 
         this.generatePlanes(this.PARAMS.count, this.PARAMS.border);
+        this.hidePlanes(this.array, this.hiddenPlanes)
+
         this.checkLinesForDistance()
 
         this.debug()
 
+    }
+
+    hidePlanes(array, hiddenArray)
+    {
+        array.forEach(plane =>
+        {
+            if (Math.random() < 0.7) // 50%
+            {
+                plane.userData.revealScale = 0; // сховали
+                hiddenArray.push(plane);
+            }
+        });
+    }
+
+    revealPlanes()
+    {
+        this.hiddenPlanes.forEach((plane, index) =>
+        {
+            gsap.to(plane.userData, {
+                revealScale: 1,
+                duration: 0.5,
+                ease: "back.out(1.1)",
+                delay: index * 0.01,
+                onUpdate: () =>
+                {
+                    plane.scale.setScalar(plane.userData.baseScale * plane.userData.revealScale);
+                }
+            });
+        });
     }
 
     generatePlanes(count, border)
@@ -97,6 +130,8 @@ export default class RandomPlanes
             plane.userData.linesExpanded = false
             plane.userData.textExpanded = false
             plane.userData.size = size
+            plane.userData.baseScale = 1; // базовий scale по відстані
+            plane.userData.revealScale = 1; // scale для появи (буде 0 якщо схований)
 
             //додаєм номер чорним плейнам
             if (colorLabel === 'black')
@@ -533,7 +568,11 @@ export default class RandomPlanes
             // Масштабуємо плейн
             const scale = newSize / baseSize * this.PARAMS.maxSize
             const scaleText = newSizeText / baseSize * this.PARAMS.maxSize
-            plane.scale.setScalar(scale)
+
+            plane.userData.baseScale = scale; // оновлюємо базовий scale по відстані
+
+            plane.scale.setScalar(plane.userData.baseScale * plane.userData.revealScale); // комбінуємо два множники
+            // plane.scale.setScalar(scale)
 
             const label = plane.userData.label;
             if (label)
@@ -614,8 +653,6 @@ export default class RandomPlanes
             })
         }
 
-
-
     }
 
     setFunctions()
@@ -624,6 +661,10 @@ export default class RandomPlanes
             reset: () =>
             {
                 this.resetPlanes()
+            },
+            reveal: () =>
+            {
+                this.revealPlanes()
             }
         }
     }
@@ -652,6 +693,7 @@ export default class RandomPlanes
             {
                 this.resetPlanes()
             })
+            this.debug.randomPlanesFolder.add(this.functions, 'reveal').name('reveal planes')
         }
     }
 

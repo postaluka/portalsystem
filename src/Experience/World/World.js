@@ -9,9 +9,7 @@ import Experience from "../Experience.js";
 import Lights from './Lights.js';
 
 import Cube from './Models/Cube.js';
-import Torus from './Models/Torus.js';
 import Sphere from './Models/Sphere.js';
-import Suzanne from './Models/Suzanne.js';
 import RandomPlanes from './Models/RandomPlanes.js';
 
 
@@ -34,19 +32,25 @@ export default class World
         this.lights = new Lights()
 
         this.cube = new Cube()
-        this.torus = new Torus()
         this.sphere = new Sphere()
-        this.suzanne = new Suzanne()
+
 
         this.randomPlanes = new RandomPlanes(this.sphere.radius)
 
-        this.rotationGroup = new THREE.Group()
-        this.scene.add(this.rotationGroup, this.sphere.instance, this.sphere.outlineLine)
+        this.rotationScrollGroup = new THREE.Group()
+        this.scene.add(
+            this.rotationScrollGroup,
+            this.sphere.outlineLine
+        )
 
+        this.parallaxGroup = new THREE.Group()
+
+        this.rotationScrollGroup.add(this.parallaxGroup, this.sphere.instance)
+        this.rotationScrollGroup.rotation.x = 0.33
 
 
         // Add models
-        this.rotationGroup.add(
+        this.parallaxGroup.add(
 
             this.randomPlanes.instance
         )
@@ -76,16 +80,16 @@ export default class World
 
     setParallax()
     {
-        const rotationTarget = this.cursor.y * 0.025
-        const positionTarget = this.cursor.x * 0.5
+        const rotationTarget = -(this.cursor.y * 0.05) // -(this.cursor.y * 0.025)
+        const positionTarget = (this.cursor.x * 0.7) // (this.cursor.x * 0.5)
 
 
-        gsap.to(this.rotationGroup.rotation, {
+        gsap.to(this.parallaxGroup.rotation, {
             x: rotationTarget,
             duration: 4,
             ease: "back.out(4)",
         })
-        gsap.to(this.rotationGroup.position, {
+        gsap.to(this.parallaxGroup.position, {
             x: positionTarget,
             duration: 4,
             ease: "back.out(4)",
@@ -98,12 +102,24 @@ export default class World
     {
         this.setParallax()
 
+        // Встановлюємо затухання (чим менше - тим довше крутиться)
+        this.damping = 0.9; // наприклад 0.96
+        this.PARAMS.angularVelocity *= this.damping;
+        // Обмеження, щоб не було дуже маленьких "вічних" обертань
+        if (Math.abs(this.PARAMS.angularVelocity) < 0.000001)
+            this.PARAMS.angularVelocity = 0;
+
         this.speedOffset = 0.0001 //0.0001
+        this.multiplierSpeed = this.PARAMS.scrollRotationMultiplier || 1
+
         this.rotationXSpeed = this.time.delta * this.speedOffset
-        this.rotationYSpeed = this.time.delta * this.speedOffset
 
+        //  SCROLL SPEED
+        this.rotationXAngularVelocitySpeed = this.PARAMS.angularVelocity
+        this.rotationScrollGroup.rotation.y += this.rotationXAngularVelocitySpeed
+
+        // LINEAR ROTATION
         this.sphere.instance.rotation.y += this.rotationXSpeed
-
         this.randomPlanes.instance.rotation.y += this.rotationXSpeed
         this.randomPlanes.array.forEach((plane) =>
         {

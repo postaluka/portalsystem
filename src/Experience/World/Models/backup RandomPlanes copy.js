@@ -5,6 +5,7 @@ import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
 
 import Experience from "../../Experience";
 import PARAMS from "../../Utils/PARAMS";
+import { log } from "three/src/nodes/TSL.js";
 
 
 export default class RandomPlanes
@@ -24,7 +25,7 @@ export default class RandomPlanes
         this.border = this.PARAMS.border
         this.instance = new THREE.Group();
 
-        this.instance.rotation.x = 0.33
+        this.instance.rotation.x = 0 //0.33
 
         // Доступні розміри
         this.sizeVariants = [0.18, 0.2, 0.22];
@@ -38,14 +39,46 @@ export default class RandomPlanes
         ]
 
         this.array = []
+        this.hiddenPlanes = []
 
         this.zThreshold = 5 // чим менше, тим раніше зʼявляються
 
         this.generatePlanes(this.PARAMS.count, this.PARAMS.border);
+        this.hidePlanes(this.array, this.hiddenPlanes)
+
         this.checkLinesForDistance()
 
         this.debug()
 
+    }
+
+    hidePlanes(array, hiddenArray)
+    {
+        array.forEach(plane =>
+        {
+            if (Math.random() < 1)
+            {
+
+                plane.scale.set(0, 0, 0);
+                hiddenArray.push(plane);
+
+            }
+        });
+    }
+
+    revealPlanes()
+    {
+        this.hiddenPlanes.forEach((plane, index) =>
+        {
+            gsap.to(plane.scale, {
+                x: plane.userData.size,
+                y: plane.userData.size,
+                z: plane.userData.size,
+                duration: 1,
+                ease: "back.out(1.7)",
+                delay: index * 0.05 // невеликий каскад
+            });
+        });
     }
 
     generatePlanes(count, border)
@@ -62,7 +95,9 @@ export default class RandomPlanes
         {
             const distance = this.radius + Math.random() * border;
 
-            const chance = (distance - this.radius) / border;
+            // const chance = (distance - this.radius) / border;
+            const chance = Math.pow(1 - (distance - this.radius) / border, 2); // або ^3
+
             if (Math.random() > chance) continue;
 
             const size = this.sizeVariants[Math.floor(Math.random() * this.sizeVariants.length)];
@@ -72,7 +107,7 @@ export default class RandomPlanes
                 'black',
                 'black',
                 'black',
-                'black',
+                // 'black',
                 'black',
                 'black',
                 'black',
@@ -436,7 +471,6 @@ export default class RandomPlanes
                     }
                     else
                     {
-                        console.log('initialized');
 
                         label.text = labelText; // на старті просто одразу весь текст
                         label.sync();
@@ -532,6 +566,7 @@ export default class RandomPlanes
             // Масштабуємо плейн
             const scale = newSize / baseSize * this.PARAMS.maxSize
             const scaleText = newSizeText / baseSize * this.PARAMS.maxSize
+
             plane.scale.setScalar(scale)
 
             const label = plane.userData.label;
@@ -609,11 +644,9 @@ export default class RandomPlanes
             gsap.delayedCall(1, () =>
             {
                 this.initialized = true
-                console.log('FIRST INITIALIZED COMPLETE ✅')
+                // console.log('FIRST INITIALIZED COMPLETE ✅')
             })
         }
-
-
 
     }
 
