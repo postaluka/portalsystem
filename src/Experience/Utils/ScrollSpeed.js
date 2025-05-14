@@ -6,7 +6,6 @@ export default class ScrollSpeed
   constructor()
   {
     this.lastProgress = 0;
-    console.log('check');
 
   }
 
@@ -24,8 +23,8 @@ export default class ScrollSpeed
     if (Math.abs(delta) < 0.0001)
       return;
 
-    // Додаємо імпульс
-    const impulse = delta * 0.05;
+    // ТУТ КОНТРОЛЮЄМО ШВІДКІСТЬ СКРОЛА (ЗМІНЮЮЧИ КОЕФІЦІЄНТ МОЖЕННЯ)
+    const impulse = delta * 0.002;
 
     PARAMS.angularVelocity += impulse;
 
@@ -33,7 +32,7 @@ export default class ScrollSpeed
     if (Math.abs(impulse) > 0.01)
     {
       gsap.to(PARAMS, {
-        angularVelocity: PARAMS.angularVelocity + impulse * 0.5,
+        angularVelocity: PARAMS.angularVelocity + impulse * 0.1, //КОЕФІЦІЄНТ ІМПУЛЬСУ МОЖНА РЕДАГУВАТИ
         duration: 0.4,
         ease: "elastic.out(1, 0.5)",
         overwrite: "auto"

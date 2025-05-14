@@ -1,6 +1,8 @@
 
 
 const PARAMS = {
+    /** TIME */
+    play: true, //false = з самого початку не грає
     /** initHome*/
     scrollRotationMultiplier: 0,
     angularVelocity: 0,
@@ -9,7 +11,7 @@ const PARAMS = {
     reveal: false,
     /** RANDOM PLANES */
     maxSize: 0.5,
-    count: 350, //230
+    count: 250, //250
     topCutoff: 0.15,
     border: 6, //5
     /** SPHERE */

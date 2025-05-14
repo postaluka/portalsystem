@@ -1,6 +1,6 @@
 import * as THREE from "three"
 
-import Experience from "../../Experience.js"
+import Experience02 from "../../Experience02.js"
 
 import Lines from "../../Utils/Lines.js"
 import PARAMS from "../../Utils/PARAMS.js"
@@ -12,18 +12,9 @@ export default class Sphere
     constructor()
     {
 
-        // this.PARAMS = {
-        //     stroke: 0.025,
-        //     outline: 0.001,
-        //     stepWidth: 2,
-        //     longSteps: 12,
-        //     widthSegments: 100,
-        //     heightSegments: 40
-        // }
-
         this.PARAMS = PARAMS
 
-        this.experience = new Experience()
+        this.experience = new Experience02()
         this.lines = new Lines(this.PARAMS.stepWidth)
         this.sizes = this.experience.sizes
 
@@ -69,6 +60,7 @@ export default class Sphere
 
         this.instance.add(this.edgeLines)
         this.instance.rotation.x = 0 //0.33
+
 
         this.outlineLine = this.lines.drawOutlineCircle({
             radius: this.radius * 1.001, // трохи більший, щоб був "поверх"

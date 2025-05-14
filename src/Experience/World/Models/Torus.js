@@ -1,6 +1,6 @@
 import * as THREE from "three"
 
-import Experience from "../../Experience.js"
+import Experience02 from "../../Experience.js"
 
 import Lines from "../../Utils/Lines.js"
 
@@ -13,7 +13,7 @@ export default class Torus
     constructor()
     {
 
-        this.experience = new Experience()
+        this.experience = new Experience02()
         this.lines = new Lines()
         this.sizes = this.experience.sizes
 

@@ -12,5 +12,16 @@ export default class Materials
             color: "red"
         })
 
+        this.black = new THREE.MeshBasicMaterial({
+            color: new THREE.Color(0x000000),
+            side: THREE.DoubleSide,
+            transparent: false
+        });
+
+        this.glitch = new THREE.MeshBasicMaterial({
+            color: 0xFFD84D,
+            transparent: true,
+        })
+
     }
 }

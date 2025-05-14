@@ -1,5 +1,5 @@
 
-import Experience from './Experience/Experience'
+import Experience02 from './Experience/Experience02'
 
 
 const model = function ()
@@ -20,6 +20,6 @@ const introPlanet = document.querySelector('.section.is--intro-section')
 /**
 * Experience
 */
-const experience = new Experience(canvas)
+const experience = new Experience02(canvas)
 
 

@@ -1,6 +1,6 @@
 import * as THREE from "three"
 
-import Experience from "../../Experience.js"
+import Experience02 from "../../Experience02.js"
 
 import Lines from "../../Utils/Lines.js"
 
@@ -12,7 +12,7 @@ export default class Cube
     constructor()
     {
 
-        this.experience = new Experience()
+        this.experience = new Experience02()
         this.lines = new Lines()
         this.sizes = this.experience.sizes
 
