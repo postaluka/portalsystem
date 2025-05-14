@@ -5,7 +5,7 @@
 
 html,
 body {
-    background-color: #E7E6E3;
+    background-color: red;
     /* no scroll when control is unactive */
     overflow: hidden;
     /* height: auto; */
