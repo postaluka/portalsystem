@@ -10,5 +10,12 @@ export default class Textures
         this.experience = new Experience02()
         this.loader = this.experience.loaders
 
+        this.ship = this.loader.textures.load(
+            '/img/SHIP ASSET.png'
+        )
+
+        this.ship.magFilter = THREE.LinearFilter
+        this.ship.minFilter = THREE.LinearMipmapLinearFilter
+
     }
 }

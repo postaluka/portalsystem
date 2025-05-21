@@ -23,5 +23,11 @@ export default class Materials
             transparent: true,
         })
 
+        this.ship = new THREE.MeshBasicMaterial({
+            map: this.textures.ship,
+            transparent: true,
+            side: THREE.DoubleSide
+        })
+
     }
 }
