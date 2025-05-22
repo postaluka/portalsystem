@@ -70,6 +70,28 @@ export default class Sphere
         this.outlineLine.rotation.x = -0.1
         // this.instance.add(outlineLine)
 
+        this.moon = this.lines.drawOutlineCircle({
+            radius: this.radius * 0.25, // трохи більший, щоб був "поверх"
+            thickness: this.PARAMS.stroke * 1.3,
+            color: 0x050505,
+            opacity: 0.1
+        })
+        this.moon.position.y = 30
+        this.moon.position.z = -35
+        this.moon.material.opacity = 0.2
+        this.moon.material.needsUpdate = true
+
+        this.moonFill = new THREE.Mesh(
+            new THREE.SphereGeometry(this.radius * 0.244, 64, 64),
+            new THREE.MeshBasicMaterial({
+                color: 0xE7E6E3//0xE7E6E3
+            })
+        )
+        this.moonFill.position.y = 30
+        this.moonFill.position.z = -35
+
+
+
 
 
     }

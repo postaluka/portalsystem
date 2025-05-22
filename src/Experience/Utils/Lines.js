@@ -287,6 +287,7 @@ export default class Lines
             linewidth: thickness,
             worldUnits: true,
             transparent: true,
+            opacity: 1,
             depthTest: true,
             depthWrite: false,
             toneMapped: false

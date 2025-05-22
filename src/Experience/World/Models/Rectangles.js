@@ -23,24 +23,6 @@ export default class Rectangles
     const totalAngleSpan = startAngle - endAngle
     const angleStep = totalAngleSpan / (totalObjects - 1)
 
-    /** SATELLITES */
-
-    this.meoSat = new THREE.Mesh(this.geometry, this.materials.ship)
-    this.meoSatAngle = Math.PI - 0.55
-    this.meoSatRadius = 15.5
-    this.meoSatX = Math.cos(this.meoSatAngle) * this.meoSatRadius
-    this.meoSatY = Math.sin(this.meoSatAngle) * this.meoSatRadius
-    this.meoSat.position.set(this.meoSatX, this.meoSatY, 0) // Z тут = 0 бо в системі orbitLeo
-    this.meoSat.scale.setScalar(7)
-
-    this.geoSat = new THREE.Mesh(this.geometry, this.materials.ship)
-    this.geoSatAngle = 0.009 //min: 0.009, max: 1.55
-    this.geoSatRadius = 20
-    this.geoSatX = Math.cos(this.geoSatAngle) * this.geoSatRadius
-    this.geoSatY = Math.sin(this.geoSatAngle) * this.geoSatRadius
-    this.geoSat.position.set(this.geoSatX, this.geoSatY, 0) // Z тут = 0 бо в системі orbitLeo
-    this.geoSat.scale.setScalar(7)
-
     /** RECT POINTS */
 
     this.leo = new THREE.Mesh(this.geometry, this.material)
@@ -129,69 +111,6 @@ export default class Rectangles
 
   }
 
-  meoSatUpdate(delta, cameraPosition)
-  {
-    // 🔁 Крок анімації
-    this.meoSatAngle -= delta * 0.0001
-    if (this.meoSatAngle < (Math.PI - 3.125)) this.meoSatAngle = Math.PI - 0.55
-
-    const r = this.meoSatRadius
-    const angle = this.meoSatAngle
-
-    // Поточна позиція
-    const x = Math.cos(angle) * r
-    const y = Math.sin(angle) * r
-    this.meoSat.position.set(x, y, 0)
-
-    // 🔮 Наступна позиція (на 1 крок вперед)
-    const nextAngle = angle + 0.00001
-    const nextX = Math.cos(nextAngle) * r
-    const nextY = Math.sin(nextAngle) * r
-
-    // Вектор напряму
-    const dx = x - nextX
-    const dy = y - nextY
-    const rotationZ = Math.atan2(dy, dx)
-
-    // ✅ Робимо вигляд, ніби квадрат плоский і дивиться на камеру
-    this.meoSat.lookAt(cameraPosition)
-    // this.meoSat.rotation.x = 0
-    // this.meoSat.rotation.y = Math.PI / 2
-
-
-  }
-
-  geoSatUpdate(delta, cameraPosition)
-  {
-    // 🔁 Крок анімації
-    this.geoSatAngle += delta * 0.0001
-    if (this.geoSatAngle > 1.55) this.geoSatAngle = 0.009
-
-    const r = this.geoSatRadius
-    const angle = this.geoSatAngle
-
-    // Поточна позиція
-    const x = Math.cos(angle) * r
-    const y = Math.sin(angle) * r
-    this.geoSat.position.set(x, y, 0)
-
-    // 🔮 Наступна позиція (на 1 крок вперед)
-    const nextAngle = angle + 0.00001
-    const nextX = Math.cos(nextAngle) * r
-    const nextY = Math.sin(nextAngle) * r
-
-    // Вектор напряму
-    const dx = x - nextX
-    const dy = y - nextY
-    const rotationZ = Math.atan2(dy, dx)
-
-    // ✅ Робимо вигляд, ніби квадрат плоский і дивиться на камеру
-    this.geoSat.lookAt(cameraPosition)
-    // this.geoSat.rotation.x = 0
-    // this.geoSat.rotation.y = Math.PI / 2
-
-
-  }
 
   blackUpdate02(delta, cameraPosition)
   {
